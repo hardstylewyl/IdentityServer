@@ -382,3 +382,4 @@ MigrationBackup/
 terraform.tfstate
 terraform.tfstate.backup
 /src/Server/VueBffProxy.Server/wwwroot
+/test/Infrastructure.Test/Infrastructure.Test.csproj
