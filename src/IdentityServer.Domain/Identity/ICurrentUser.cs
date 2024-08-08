@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace IdentityServer.Domain.Identity;
+﻿namespace IdentityServer.Domain.Identity;
 
 public interface ICurrentUser
 {
