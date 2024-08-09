@@ -8,10 +8,7 @@ public static class IdentityServiceCollectionExtensions
 {
 	public static IServiceCollection AddIP2RegionIpInfoService(this IServiceCollection services, string libPath)
 	{
-		services.AddSingleton<IIpInfoService>((_) =>
-		{
-			return new IP2RegionIpInfoService(libPath);
-		});
+		services.AddSingleton<IIpInfoService>(_ => new IP2RegionIpInfoService(libPath));
 
 		return services;
 	}
@@ -21,6 +18,8 @@ public static class IdentityServiceCollectionExtensions
 		services.AddIdentity<User, Role>()
 			.AddTokenProviders()
 			.AddPasswordValidators()
+			.AddUserManager<UserManager>()
+			.AddSignInManager<SignInManager>()
 			.AddErrorDescriber<LocalizedIdentityErrorDescriber>();
 
 		services.AddTransient<IUserStore<User>, UserStore>();
@@ -41,10 +40,11 @@ public static class IdentityServiceCollectionExtensions
 
 	public static IServiceCollection AddIdentityCore(this IServiceCollection services)
 	{
-
 		services.AddIdentityCore<User>()
 				.AddTokenProviders()
 				.AddPasswordValidators()
+				.AddUserManager<UserManager>()
+				.AddSignInManager<SignInManager>()
 				.AddErrorDescriber<LocalizedIdentityErrorDescriber>();
 
 		services.AddTransient<IUserStore<User>, UserStore>();
