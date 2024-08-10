@@ -12,6 +12,3 @@ public class UserTokenConfiguration : IEntityTypeConfiguration<UserToken>
 		builder.Property(x => x.Id).UseHiLo("usertokenseq");
 	}
 }
-
-
-

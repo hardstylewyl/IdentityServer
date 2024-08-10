@@ -32,10 +32,8 @@ public static class LocalizationServiceCollectionExtensions
 			{
 				return new ProviderCultureResult("zh-CN");
 			}));
-
 		});
 
 		return services;
 	}
-
 }

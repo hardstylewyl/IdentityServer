@@ -243,14 +243,14 @@ public class UserStore : IUserStore<User>,
 	private const string AuthenticatorKeyTokenName = "AuthenticatorKey";
 	private const string RecoveryCodeTokenName = "RecoveryCodes";
 
-	public Task<string> GetTokenAsync(User user, string loginProvider, string name, CancellationToken cancellationToken)
+	public Task<string?> GetTokenAsync(User user, string loginProvider, string name, CancellationToken cancellationToken)
 	{
 		var tokenEntity = user.Tokens.SingleOrDefault(
 				l => l.TokenName == name && l.LoginProvider == loginProvider);
 		return Task.FromResult(tokenEntity?.TokenValue);
 	}
 
-	public async Task SetTokenAsync(User user, string loginProvider, string name, string value, CancellationToken cancellationToken)
+	public async Task SetTokenAsync(User user, string loginProvider, string name, string? value, CancellationToken cancellationToken)
 	{
 		var tokenEntity = user.Tokens.SingleOrDefault(
 				l => l.TokenName == name && l.LoginProvider == loginProvider);
@@ -288,7 +288,7 @@ public class UserStore : IUserStore<User>,
 		return SetTokenAsync(user, AuthenticatorStoreLoginProvider, AuthenticatorKeyTokenName, key, cancellationToken);
 	}
 
-	public Task<string> GetAuthenticatorKeyAsync(User user, CancellationToken cancellationToken)
+	public Task<string?> GetAuthenticatorKeyAsync(User user, CancellationToken cancellationToken)
 	{
 		return GetTokenAsync(user, AuthenticatorStoreLoginProvider, AuthenticatorKeyTokenName, cancellationToken);
 	}
@@ -323,5 +323,4 @@ public class UserStore : IUserStore<User>,
 
 		return 0;
 	}
-
 }

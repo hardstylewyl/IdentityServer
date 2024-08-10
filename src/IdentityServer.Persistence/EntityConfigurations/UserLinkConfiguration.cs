@@ -12,6 +12,3 @@ public class UserLinkConfiguration : IEntityTypeConfiguration<UserLink>
 		builder.Property(x => x.Id).UseHiLo("userlinkseq");
 	}
 }
-
-
-

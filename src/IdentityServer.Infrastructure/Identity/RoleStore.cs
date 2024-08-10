@@ -7,7 +7,6 @@ namespace IdentityServer.Infrastructure.Identity;
 
 public class RoleStore : IRoleStore<Role>
 {
-
 	private readonly IUnitOfWork _unitOfWork;
 	private readonly IRoleRepository _roleRepository;
 

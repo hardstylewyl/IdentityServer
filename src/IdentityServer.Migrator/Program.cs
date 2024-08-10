@@ -10,4 +10,3 @@ builder.Services.AddPersistence("Server=127.0.0.1;Port=5432;Database=identityser
 var app = builder.Build();
 app.MigrateIdentityServerDb();
 app.Run();
-

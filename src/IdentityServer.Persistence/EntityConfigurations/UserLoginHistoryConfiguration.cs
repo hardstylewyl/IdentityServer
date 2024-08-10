@@ -13,6 +13,3 @@ public class UserLoginHistoryConfiguration : IEntityTypeConfiguration<UserLoginH
 		builder.Property(x => x.Id).UseHiLo("userloginhistoryseq");
 	}
 }
-
-
-

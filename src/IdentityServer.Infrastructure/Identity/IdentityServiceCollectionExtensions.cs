@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IdentityServer.Infrastructure.Identity;
+
 public static class IdentityServiceCollectionExtensions
 {
 	public static IServiceCollection AddIP2RegionIpInfoService(this IServiceCollection services, string libPath)
@@ -33,10 +34,8 @@ public static class IdentityServiceCollectionExtensions
 			options.LoginPath = "/Account/Login";
 		});
 
-
 		return services;
 	}
-
 
 	public static IServiceCollection AddIdentityCore(this IServiceCollection services)
 	{
@@ -56,11 +55,11 @@ public static class IdentityServiceCollectionExtensions
 		return services;
 	}
 
-
 	private static IdentityBuilder AddTokenProviders(this IdentityBuilder identityBuilder)
 	{
 		identityBuilder
 			.AddDefaultTokenProviders()
+			.AddTokenProvider<AuthenticatorTokenProvider<User>>(TokenOptions.DefaultAuthenticatorProvider)
 			.AddTokenProvider<EmailConfirmationTokenProvider<User>>("EmailConfirmation");
 
 		return identityBuilder;
@@ -113,8 +112,4 @@ public static class IdentityServiceCollectionExtensions
 			//option.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3;
 		});
 	}
-
-
-
-
 }

@@ -6,7 +6,6 @@ namespace IdentityServer.Infrastructure.Identity;
 
 public class LocalizedIdentityErrorDescriber(IStringLocalizer<IdentityLocalization> localizer) : IdentityErrorDescriber
 {
-
 	public override IdentityError DefaultError() => new()
 	{
 		Code = nameof(DefaultError),
@@ -31,13 +30,11 @@ public class LocalizedIdentityErrorDescriber(IStringLocalizer<IdentityLocalizati
 		Description = localizer[nameof(InvalidToken)]
 	};
 
-
 	public override IdentityError RecoveryCodeRedemptionFailed() => new()
 	{
 		Code = nameof(RecoveryCodeRedemptionFailed),
 		Description = localizer[nameof(RecoveryCodeRedemptionFailed)]
 	};
-
 
 	public override IdentityError LoginAlreadyAssociated() => new()
 	{
@@ -59,13 +56,11 @@ public class LocalizedIdentityErrorDescriber(IStringLocalizer<IdentityLocalizati
 		Description = string.Format(localizer[nameof(InvalidEmail)], email)
 	};
 
-
 	public override IdentityError DuplicateUserName(string userName) => new()
 	{
 		Code = nameof(DuplicateUserName),
 		Description = string.Format(localizer[nameof(DuplicateUserName)], userName)
 	};
-
 
 	public override IdentityError DuplicateEmail(string email) => new()
 	{
@@ -79,13 +74,11 @@ public class LocalizedIdentityErrorDescriber(IStringLocalizer<IdentityLocalizati
 		Description = string.Format(nameof(InvalidRoleName), role)
 	};
 
-
 	public override IdentityError DuplicateRoleName(string role) => new()
 	{
 		Code = nameof(DuplicateRoleName),
 		Description = string.Format(localizer[nameof(DuplicateRoleName)], role)
 	};
-
 
 	public override IdentityError UserAlreadyHasPassword() => new()
 	{
@@ -105,7 +98,6 @@ public class LocalizedIdentityErrorDescriber(IStringLocalizer<IdentityLocalizati
 		Description = string.Format(localizer[nameof(UserAlreadyInRole)], role)
 	};
 
-
 	public override IdentityError UserNotInRole(string role) => new()
 	{
 		Code = nameof(UserNotInRole),
@@ -123,6 +115,7 @@ public class LocalizedIdentityErrorDescriber(IStringLocalizer<IdentityLocalizati
 		Code = nameof(PasswordRequiresUniqueChars),
 		Description = string.Format(localizer[nameof(PasswordRequiresUniqueChars)], uniqueChars)
 	};
+
 	public override IdentityError PasswordRequiresNonAlphanumeric() => new()
 	{
 		Code = nameof(PasswordRequiresNonAlphanumeric),

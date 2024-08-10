@@ -33,5 +33,4 @@ public class UserLink : Entity<long>
 	/// 登录名
 	/// </summary>
 	public string LoginName { get; set; }
-
 }

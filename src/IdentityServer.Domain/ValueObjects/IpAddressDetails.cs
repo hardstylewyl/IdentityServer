@@ -8,19 +8,24 @@ public class IpAddressDetails : ValueObject
 
 	//市区
 	public string City { get; private set; }
+
 	//省级
 	public string State { get; private set; }
+
 	//国家
 	public string Country { get; private set; }
+
 	//运营商
 	public string Carrier { get; set; }
+
 	//街道
 	public string Street { get; private set; }
+
 	//邮编
 	public string ZipCode { get; private set; }
 
-
-	public IpAddressDetails() { }
+	public IpAddressDetails()
+	{ }
 
 	public IpAddressDetails(string ip, string city, string state, string country, string carrier, string street, string zipCode)
 	{

@@ -18,5 +18,4 @@ public sealed class UserManager(
 	: UserManager<User>(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer,
 		errors, services, logger)
 {
-
 }

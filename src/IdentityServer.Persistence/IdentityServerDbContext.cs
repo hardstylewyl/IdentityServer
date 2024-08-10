@@ -8,7 +8,6 @@ namespace IdentityServer.Persistence;
 
 public class IdentityServerDbContext : DbContext, IUnitOfWork, IDataProtectionKeyContext
 {
-
 #nullable disable
 	private IDbContextTransaction _dbContextTransaction;
 

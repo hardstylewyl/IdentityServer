@@ -10,7 +10,6 @@ public static class PersistenceExtensions
 {
 	public static IServiceCollection AddPersistence(this IServiceCollection services, string connectionString, string migrationsAssembly = "")
 	{
-
 		services.AddDbContext<IdentityServerDbContext>(options =>
 		{
 			options.UseNpgsql(connectionString, sql =>
@@ -22,16 +21,12 @@ public static class PersistenceExtensions
 			});
 
 			options.UseOpenIddict();
-
 		})
 			.AddDbContextFactory<IdentityServerDbContext>((Action<DbContextOptionsBuilder>)null, ServiceLifetime.Scoped)
 			.AddRepositories();
 
-
-
 		return services;
 	}
-
 
 	private static IServiceCollection AddRepositories(this IServiceCollection services)
 	{
@@ -51,11 +46,9 @@ public static class PersistenceExtensions
 		return services;
 	}
 
-
 	public static void MigrateIdentityServerDb(this IApplicationBuilder app)
 	{
 		using var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
 		serviceScope.ServiceProvider.GetRequiredService<IdentityServerDbContext>().Database.Migrate();
 	}
-
 }

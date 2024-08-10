@@ -6,7 +6,6 @@ namespace IdentityServer.Infrastructure.Identity;
 
 public sealed class IP2RegionIpInfoService : IIpInfoService
 {
-
 	private readonly Searcher Searcher;
 
 	internal IP2RegionIpInfoService(string libPath)
@@ -31,4 +30,3 @@ public sealed class IP2RegionIpInfoService : IIpInfoService
 		return Task.FromResult(new IpAddressDetails(ipAddress, city, state, country, carrier, "", ""));
 	}
 }
-

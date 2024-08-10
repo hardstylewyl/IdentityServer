@@ -20,7 +20,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 			.HasForeignKey(x => x.UserId)
 			.OnDelete(DeleteBehavior.Cascade);
 
-
 		//builder.HasMany(x => x.UserLinks)
 		//.WithOne()
 		//.HasForeignKey(x => x.UserId)
@@ -30,7 +29,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 		//.WithOne()
 		//.HasForeignKey(x => x.UserId)
 		//.OnDelete(DeleteBehavior.Cascade);
-
 
 		//builder.HasMany(x => x.Tokens)
 		//.WithOne()
