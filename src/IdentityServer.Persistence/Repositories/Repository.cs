@@ -1,4 +1,4 @@
-﻿using IdentityServer.CrossCuttingConcerns.DateTimes;
+using IdentityServer.CrossCuttingConcerns.DateTimes;
 using IdentityServer.Domain.Entites.Abstractions;
 using IdentityServer.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;

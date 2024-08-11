@@ -1,4 +1,4 @@
-﻿using IdentityServer.Domain.ValueObjects;
+using IdentityServer.Domain.ValueObjects;
 
 namespace IdentityServer.Domain.Identity;
 

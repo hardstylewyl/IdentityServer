@@ -1,4 +1,4 @@
-﻿using IdentityServer.Domain.Entites.Abstractions;
+using IdentityServer.Domain.Entites.Abstractions;
 using IdentityServer.Domain.ValueObjects;
 
 namespace IdentityServer.Domain.Entites;

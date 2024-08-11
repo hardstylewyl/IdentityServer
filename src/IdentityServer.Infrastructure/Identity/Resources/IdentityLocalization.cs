@@ -1,4 +1,4 @@
-﻿namespace IdentityServer.Infrastructure.Identity.Resources;
+namespace IdentityServer.Infrastructure.Identity.Resources;
 
 public class IdentityLocalization
 {

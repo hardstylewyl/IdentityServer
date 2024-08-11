@@ -1,4 +1,4 @@
-﻿namespace IdentityServer.CrossCuttingConcerns.DateTimes;
+namespace IdentityServer.CrossCuttingConcerns.DateTimes;
 
 public interface IDateTimeProvider
 {

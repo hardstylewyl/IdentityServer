@@ -1,0 +1,54 @@
+﻿@using IdentityServer.Infrastructure.Identity
+@inject SignInManager SignInManager
+@inject UserManager UserManager
+
+@{
+	//TODO：topBar菜单待完成
+	var isLogin = SignInManager.IsSignedIn(User);
+	var nickname = "HardStyle";
+	var pictrue = "https://ui-avatars.com/api/?name=827778732@qq&background=0D8ABC";
+}
+
+<style>
+	.user-img {
+		width: 40px;
+		height: 40px;
+	}
+</style>
+
+<header class="sticky-top">
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+		<div class="container">
+			@* 应用名称 *@
+			<a class="navbar-brand" href="#">IdentityServer</a>
+			<ul class="navbar-nav">
+				@if (isLogin)
+				{
+					<!-- 昵称 -->
+					<li class="nav-item d-flex align-items-center mx-3 text-white">
+						<span>@nickname</span>
+					</li>
+					<!-- 头像及下拉菜单 -->
+					<li class="nav-item position-relative">
+						<a href="#" data-bs-toggle="dropdown">
+							<img src="@pictrue" class="user-img rounded-circle" alt="">
+						</a>
+						<div class="dropdown-menu dropdown-menu-end">
+							<a class="dropdown-item" href="#">个人信息</a>
+							<a class="dropdown-item" href="#"> 退出</a>
+						</div>
+					</li>
+				}
+				else
+				{
+					<li class="nav-item">
+						<a class="nav-link" asp-controller="Account" asp-action="Login">登录</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" asp-controller="Account" asp-action="Register">注册</a>
+					</li>
+				}
+			</ul>
+		</div>
+	</nav>
+</header>

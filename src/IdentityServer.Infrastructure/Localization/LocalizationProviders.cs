@@ -1,4 +1,4 @@
-﻿namespace IdentityServer.Infrastructure.Localization;
+namespace IdentityServer.Infrastructure.Localization;
 
 public class LocalizationProviders
 {

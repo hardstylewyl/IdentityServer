@@ -1,4 +1,4 @@
-﻿using IdentityServer.Infrastructure.Identity.Resources;
+using IdentityServer.Infrastructure.Identity.Resources;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 

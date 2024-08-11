@@ -1,4 +1,4 @@
-﻿namespace IdentityServer.Domain.Entites.Abstractions;
+namespace IdentityServer.Domain.Entites.Abstractions;
 
 public interface IHasKey<T>
 {
