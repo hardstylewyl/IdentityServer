@@ -1,4 +1,4 @@
-﻿namespace IdentityServer.Domain.ValueObjects;
+namespace IdentityServer.Domain.ValueObjects;
 
 public class IpAddressDetails : ValueObject
 {

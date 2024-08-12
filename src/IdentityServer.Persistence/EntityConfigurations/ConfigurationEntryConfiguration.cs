@@ -1,4 +1,4 @@
-﻿using IdentityServer.Domain.Entites;
+using IdentityServer.Domain.Entites;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

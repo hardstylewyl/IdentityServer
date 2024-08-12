@@ -1,4 +1,4 @@
-﻿using IdentityServer.Domain.Repositories;
+using IdentityServer.Domain.Repositories;
 using IdentityServer.Persistence.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;

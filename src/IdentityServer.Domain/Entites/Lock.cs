@@ -1,4 +1,4 @@
-﻿namespace IdentityServer.Domain.Entites;
+namespace IdentityServer.Domain.Entites;
 
 public class Lock
 {

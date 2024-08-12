@@ -1,4 +1,4 @@
-﻿namespace IdentityServer.Domain.Repositories;
+namespace IdentityServer.Domain.Repositories;
 
 public interface IConcurrencyHandler<TEntity>
 {

@@ -1,4 +1,4 @@
-﻿using IdentityServer.Domain.Identity;
+using IdentityServer.Domain.Identity;
 using IdentityServer.Domain.ValueObjects;
 using IP2Region.Net.XDB;
 

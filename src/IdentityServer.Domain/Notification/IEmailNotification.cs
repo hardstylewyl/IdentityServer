@@ -1,4 +1,4 @@
-﻿namespace IdentityServer.Domain.Notification;
+namespace IdentityServer.Domain.Notification;
 
 public interface IEmailNotification
 {

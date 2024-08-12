@@ -1,4 +1,4 @@
-﻿namespace IdentityServer.CrossCuttingConcerns.Utility;
+namespace IdentityServer.CrossCuttingConcerns.Utility;
 
 public static class Ensure
 {

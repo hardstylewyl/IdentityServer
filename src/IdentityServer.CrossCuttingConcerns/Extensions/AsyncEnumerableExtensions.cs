@@ -1,4 +1,4 @@
-﻿namespace IdentityServer.CrossCuttingConcerns.Extensions;
+namespace IdentityServer.CrossCuttingConcerns.Extensions;
 
 public static class AsyncEnumerableExtensions
 {

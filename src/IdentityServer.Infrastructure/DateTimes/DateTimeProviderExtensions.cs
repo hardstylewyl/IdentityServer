@@ -1,4 +1,4 @@
-﻿using IdentityServer.CrossCuttingConcerns.DateTimes;
+using IdentityServer.CrossCuttingConcerns.DateTimes;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IdentityServer.Infrastructure.DateTimes;

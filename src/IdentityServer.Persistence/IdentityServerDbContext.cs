@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using IdentityServer.Domain.Repositories;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
