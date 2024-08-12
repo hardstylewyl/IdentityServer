@@ -16,9 +16,12 @@
 		<ProjectReference Include="..\IdentityServer.Persistence\IdentityServer.Persistence.csproj" />
 	</ItemGroup>
 
+<<<<<<< HEAD
 	<ItemGroup>
 	  <Folder Include="wwwroot\css\" />
 	  <Folder Include="wwwroot\js\" />
 	</ItemGroup>
 
+=======
+>>>>>>> account
 </Project>

@@ -1,0 +1,73 @@
+﻿<script>
+	//需要引入layui
+	//吐司
+	function showToast(msg) {
+		layer.msg(msg)
+	}
+
+	//成功提示框
+	function successAlert(msg, time = 2000) {
+		layer.alert(msg, {
+			icon: 1, time: time, offset: 't', closeBtn: 0, title: '成功', btn: [], anim: 2, shade: 0
+		})
+	}
+
+	//警告提示框
+	function waringAlert(msg, time = 2000) {
+		layer.alert(msg, {
+			icon: 3, time: time, offset: 't', closeBtn: 0, title: '成功', btn: [], anim: 2, shade: 0
+		})
+	}
+
+	//错误提示框
+	function errorAlert(msg, time = 2000) {
+		layer.alert(msg, {
+			icon: 5, time: time, offset: 't', closeBtn: 0, title: '错误信息', btn: [], anim: 2, shade: 0
+		})
+	}
+
+</script>
+@* 提醒 *@
+@if (TempData.TryGetValue(AlertModel.Key, out var m)
+     && m is AlertModel alertModel)
+{
+	switch (alertModel.Type)
+	{
+		case AlertType.Toast:
+			<script>
+				showToast('@alertModel.Message');
+			</script>
+			break;
+		case AlertType.Success:
+			<script>
+				successAlert('@alertModel.Message', @alertModel.Duration);
+			</script>
+			break;
+		case AlertType.Warning:
+			<script>
+				waringAlert('@alertModel.Message', @alertModel.Duration);
+			</script>
+			break;
+		case AlertType.Error:
+			<script>
+				errorAlert('@alertModel.Message', @alertModel.Duration);
+			</script>
+			break;
+	}
+}
+
+@* 动作 *@
+@if (TempData.TryGetValue(ActionModel.Key, out var m2)
+     && m2 is ActionModel actionModel)
+{
+	switch (actionModel.Type)
+	{
+		case ActionType.Redirect:
+			<script>
+				setTimeout(function () {
+					window.location.replace('@actionModel.Url')
+				}, @actionModel.Delay)
+			</script>
+			break;
+	}
+}

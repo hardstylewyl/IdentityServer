@@ -29,6 +29,20 @@ public sealed class AccountController(
 	public IActionResult Login(string returnUrl = "/")
 	{
 		ViewData["ReturnUrl"] = returnUrl;
+		// return View("ExternalLoginFailure");
+		// return View("ExternalLoginConfirmation");
+		// return View("ResetPassword");
+		// return View("ResetPasswordConfirmation");
+		// return View("SendCode", new SendCodeViewModel()
+		// {
+		// 	Providers = new List<SelectListItem>()
+		// 	{
+		// 			new("Phone","Phone") {}
+		// 	}
+		// });
+		// return View("UseRecoveryCode");
+		// return View("VerifyAuthenticatorCode");
+		// return View("VerifyCode");
 		return View();
 	}
 
@@ -77,7 +91,7 @@ public sealed class AccountController(
 		ModelState.AddModelError(string.Empty, "登录失败，账户或者密码错误");
 		return View(model);
 	}
-
+	
 	#endregion 登录
 
 	#region 注册
@@ -186,13 +200,13 @@ public sealed class AccountController(
 		if (remoteError != null)
 		{
 			ModelState.AddModelError(string.Empty, $"来自外部提供商的错误: {remoteError}");
-			return View(nameof(Login));
+			return View("Login");
 		}
 
 		var info = await signInManager.GetExternalLoginInfoAsync();
 		if (info == null)
 		{
-			return RedirectToAction(nameof(Login));
+			return RedirectToAction("Login");
 		}
 
 		// 如果用户已经登录，则使用此外部登录提供程序登录用户。
@@ -224,7 +238,7 @@ public sealed class AccountController(
 		var email = info.Principal.FindFirstValue(ClaimTypes.Email);
 		return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email! });
 	}
-
+	
 	//
 	// POST: /Account/ExternalLoginConfirmation
 	[HttpPost]
@@ -632,7 +646,7 @@ public sealed class AccountController(
 		}
 	}
 
-	private Task<User> GetCurrentUserAsync()
+	private Task<User?> GetCurrentUserAsync()
 	{
 		return userManager.GetUserAsync(HttpContext.User);
 	}

@@ -1,4 +1,35 @@
-﻿<div>
-	Verify your authenticator code:
-</div>
+@model VerifyAuthenticatorCodeViewModel
 
+<div class="fxt-content">
+	<div class="fxt-form">
+		<form asp-controller="Account"
+		      asp-action="VerifyAuthenticatorCode"
+		      asp-route-returnurl="@ViewData["ReturnUrl"]"
+		      method="post">
+			<h2>验证身份验证器代码</h2>
+			<h4>@ViewData["Status"]</h4>
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<input asp-for="RememberMe" type="hidden"/>
+			<div class="form-group">
+				<input asp-for="Code" class="form-control" placeholder="代码" required/>
+				<span asp-validation-for="Code" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<div class="fxt-checkbox-area">
+					<div class="checkbox">
+						<input asp-for="RememberBrowser"/>
+						<label asp-for="RememberBrowser"></label>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<button type="submit" class="fxt-btn-fill">提交</button>
+			</div>
+		</form>
+		<div class="fxt-footer">
+			<p>
+				<a asp-action="UseRecoveryCode">丢失了身份验证器?</a>
+			</p>
+		</div>
+	</div>
+</div>

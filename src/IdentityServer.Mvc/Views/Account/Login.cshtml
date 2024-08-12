@@ -1,3 +1,89 @@
-﻿<div>
-	Login Page
+@model LoginViewModel
+<div class="fxt-content">
+
+	<div class="fxt-form">
+		<h2>登录</h2>
+		<form asp-controller="Account"
+		      asp-action="Login"
+		      asp-route-returnurl="@ViewData["ReturnUrl"]"
+		      method="post">
+			@* 显示全部错误 *@
+			<div asp-validation-summary="All" class="text-danger"></div>
+			<div class="form-group">
+				<input asp-for="Username" class="form-control" placeholder="账号/手机号/邮箱" required/>
+				<span asp-validation-for="Username" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<input asp-for="Password" class="form-control" placeholder="请输入密码" required/>
+				@* 控制密码可见性 *@
+				<i toggle="#Password" class="fa fa-fw fa-eye-slash toggle-password field-icon"></i>
+				<span asp-validation-for="Password" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<div class="fxt-checkbox-area">
+					<div class="checkbox">
+						<input asp-for="RememberMe"/>
+						<label asp-for="RememberMe"></label>
+					</div>
+					<a asp-action="ForgotPassword"
+					   asp-route-returnurl="@ViewData["ReturnUrl"]"
+					   class="switcher-text">
+						找回密码
+					</a>
+				</div>
+			</div>
+			<div class="form-group">
+				<button type="submit" class="fxt-btn-fill">登录</button>
+			</div>
+		</form>
+	</div>
+
+	<div class="fxt-style-line">
+		<h3>支持的三方登录</h3>
+	</div>
+
+	@* 三方登录选项按钮组 *@
+	<form asp-action="ExternalLogin"
+	      asp-route-returnUrl="@ViewData["ReturnUrl"]"
+	      method="post">
+		<ul class="fxt-socials">
+			<li class="fxt-facebook">
+				<button type="submit" name="provider" value="GitHub">GitHub</button>
+			</li>
+			<li class="fxt-twitter">
+				<button type="submit" name="provider" value="Gitee">Gitee</button>
+			</li>
+			<li class="fxt-google">
+				<button type="submit" name="provider" value="OSChina">...</button>
+			</li>
+			<li class="fxt-linkedin">
+				<button type="submit" name="provider" value="Linkedin">...</button>
+			</li>
+			<li class="fxt-linkedin">
+				<button type="submit" name="provider" value="Linkedin">...</button>
+			</li>
+			<li class="fxt-linkedin">
+				<button type="submit" name="provider" value="Linkedin">...</button>
+			</li>
+			<li class="fxt-linkedin">
+				<button type="submit" name="provider" value="Linkedin">...</button>
+			</li>
+			<li class="fxt-linkedin">
+				<button type="submit" name="provider" value="Linkedin">...</button>
+			</li>
+		</ul>
+	</form>
+
+
+	<div class="fxt-footer">
+		<p>
+			你还没有账号?
+			<a asp-action="Register"
+			   asp-route-returnUrl="@ViewData["ReturnUrl"]"
+			   class="switcher-text2 inline-text">
+				点我注册
+			</a>
+		</p>
+	</div>
+
 </div>
