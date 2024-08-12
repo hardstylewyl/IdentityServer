@@ -1,8 +1,23 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+	ViewData["Title"] = "Home Page";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+	<h1 class="display-4">Welcome</h1>
+	<p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+	<form method="post">
+		<input name="redirect" placeholder="please redirect url"/>
+		<select name="id">
+			<option value="1">成功提示</option>
+			<option value="2">错误提示</option>
+			<option value="3">警告提示</option>
+			<option value="4">吐司</option>
+			<option value="5">准备跳转</option>
+		</select>
+		<input type="submit" value="Submit"/>
+	</form>
 </div>
+
+
+@section Scripts{ @{ await Html.RenderPartialAsync("Partial_Handler"); } }

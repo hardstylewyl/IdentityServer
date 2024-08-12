@@ -1,4 +1,31 @@
-﻿<div>
-	Verify Code
-</div>
+﻿@model VerifyCodeViewModel
 
+<div class="fxt-content">
+	<div class="fxt-form">
+		<form asp-controller="Account"
+		      asp-action="VerifyCode"
+		      asp-route-returnurl="@ViewData["ReturnUrl"]"
+		      method="post">
+			<h2>验证代码</h2>
+			<h4>@ViewData["Status"]</h4>
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<input asp-for="Provider" type="hidden"/>
+			<input asp-for="RememberMe" type="hidden"/>
+			<div class="form-group">
+				<input asp-for="Code" class="form-control" placeholder="代码" required/>
+				<span asp-validation-for="Code" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<div class="fxt-checkbox-area">
+					<div class="checkbox">
+						<input asp-for="RememberBrowser"/>
+						<label asp-for="RememberBrowser"></label>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<button type="submit" class="fxt-btn-fill">提交</button>
+			</div>
+		</form>
+	</div>
+</div>

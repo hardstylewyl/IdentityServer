@@ -1,3 +1,47 @@
-﻿<div>
-	Register
+﻿@model RegisterViewModel
+<div class="fxt-content">
+	<div class="fxt-form">
+		<h2>注册</h2>
+		<form asp-controller="Account"
+		      asp-action="Register"
+		      asp-route-returnurl="@ViewData["ReturnUrl"]"
+		      method="post">
+			<div asp-validation-summary="All" class="text-danger"></div>
+			<div class="form-group">
+				<input asp-for="Username" class="form-control" placeholder="请输入账号" required/>
+				<span asp-validation-for="Username" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<input asp-for="Nickname" class="form-control" placeholder="请输入昵称" required/>
+				<span asp-validation-for="Nickname" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<input asp-for="Email" class="form-control" placeholder="请输入邮箱" required/>
+				<span asp-validation-for="Email" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<input asp-for="Password" class="form-control" placeholder="请输入密码" required/>
+				<i toggle="#Password" class="fa fa-fw fa-eye-slash toggle-password field-icon"></i>
+				<span asp-validation-for="Password" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<input asp-for="ConfirmPassword" class="form-control" placeholder="请在次输入密码" required/>
+				<i toggle="#ConfirmPassword" class="fa fa-fw fa-eye-slash toggle-password field-icon"></i>
+				<span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<button type="submit" class="fxt-btn-fill">注册</button>
+			</div>
+		</form>
+	</div>
+	<div class="fxt-footer">
+		<p>
+			已有账号?
+			<a asp-action="Login"
+			   asp-route-returnurl="@ViewData["ReturnUrl"]"
+			   class="switcher-text2 inline-text">
+				点此登录
+			</a>
+		</p>
+	</div>
 </div>

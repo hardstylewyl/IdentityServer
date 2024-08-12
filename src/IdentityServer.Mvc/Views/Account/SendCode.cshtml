@@ -1,4 +1,19 @@
-﻿<div>
-	Send code
-</div>
+﻿@model SendCodeViewModel
 
+<div class="fxt-content">
+	<div class="fxt-form">
+		<form asp-controller="Account"
+		      asp-action="SendCode"
+		      method="post">
+			<h2>您的账户启用了2FA认证！</h2>
+			<input asp-for="RememberMe" type="hidden"/>
+			<div class="row">
+				<div class="col-md-8">
+					请选择2FA认证提供者:
+					<select asp-for="SelectedProvider" asp-items="Model.Providers"></select>
+					<button type="submit" class="btn btn-primary">确认</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
