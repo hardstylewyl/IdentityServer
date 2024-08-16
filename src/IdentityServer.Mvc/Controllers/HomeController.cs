@@ -15,7 +15,7 @@ public class HomeController(ILogger<HomeController> logger) : Controller
 	[HttpPost]
 	public IActionResult Index(int id, string redirect = "/")
 	{
-		return RedirectToAction("Login","Account");
+		
 		switch (id)
 		{
 			case 1:
@@ -39,6 +39,9 @@ public class HomeController(ILogger<HomeController> logger) : Controller
 		return View();
 	}
 
+	
+	
+	
 	public IActionResult Privacy()
 	{
 		return View();

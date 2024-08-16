@@ -108,12 +108,12 @@ public class UserStore : IUserStore<User>,
 		return Task.FromResult(user.NormalizedUserName);
 	}
 
-	public Task<string> GetPasswordHashAsync(User user, CancellationToken cancellationToken)
+	public Task<string?> GetPasswordHashAsync(User user, CancellationToken cancellationToken)
 	{
 		return Task.FromResult(user.PasswordHash);
 	}
 
-	public Task<string> GetPhoneNumberAsync(User user, CancellationToken cancellationToken)
+	public Task<string?> GetPhoneNumberAsync(User user, CancellationToken cancellationToken)
 	{
 		return Task.FromResult(user.PhoneNumber);
 	}

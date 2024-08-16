@@ -18,6 +18,7 @@ public static class PersistenceExtensions
 				{
 					sql.MigrationsAssembly(migrationsAssembly);
 				}
+				AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 			});
 
 			options.UseOpenIddict();

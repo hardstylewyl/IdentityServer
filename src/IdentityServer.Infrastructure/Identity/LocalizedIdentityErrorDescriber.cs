@@ -41,9 +41,7 @@ public class LocalizedIdentityErrorDescriber(IStringLocalizer<IdentityLocalizati
 		Code = nameof(LoginAlreadyAssociated),
 		Description = localizer[nameof(LoginAlreadyAssociated)]
 	};
-
-	/// <summary>
-
+	
 	public override IdentityError InvalidUserName(string? userName) => new()
 	{
 		Code = nameof(InvalidUserName),

@@ -61,7 +61,8 @@ public sealed class AccountController(
 
 		// 这不将登录失败计入帐户锁定
 		// 要使密码失败触发帐户锁定，请设置 lockoutOnFailure: true
-		var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, lockoutOnFailure: true);
+		var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe,
+			lockoutOnFailure: true);
 
 		var user = await userManager.FindByNameAsync(model.Username);
 
@@ -91,7 +92,7 @@ public sealed class AccountController(
 		ModelState.AddModelError(string.Empty, "登录失败，账户或者密码错误");
 		return View(model);
 	}
-	
+
 	#endregion 登录
 
 	#region 注册
@@ -131,14 +132,14 @@ public sealed class AccountController(
 
 		//添加一些默认的声明信息
 		result = await userManager.AddClaimsAsync(user, [
-			   new(Claims.Gender, ""),
-				new(Claims.Address, ""),
-				new(Claims.Birthdate, ""),
-				new Claim(Claims.Nickname, model.Nickname),
-				new Claim(Claims.Name, model.Nickname),
-                //使用生成的头像
-                new Claim(Claims.Picture, $"https://ui-avatars.com/api/?name={model.Nickname}&background=0D8ABC")
-			]);
+			new(Claims.Gender, ""),
+			new(Claims.Address, ""),
+			new(Claims.Birthdate, ""),
+			new Claim(Claims.Nickname, model.Nickname),
+			new Claim(Claims.Name, model.Nickname),
+			//使用生成的头像
+			new Claim(Claims.Picture, $"https://ui-avatars.com/api/?name={model.Nickname}&background=0D8ABC")
+		]);
 
 		//声明信息添加失败，删除用户
 		if (!result.Succeeded)
@@ -210,7 +211,8 @@ public sealed class AccountController(
 		}
 
 		// 如果用户已经登录，则使用此外部登录提供程序登录用户。
-		var result = await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
+		var result =
+			await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
 		if (result.Succeeded)
 		{
 			// 如果登录成功则更新所有身份验证令牌
@@ -238,13 +240,14 @@ public sealed class AccountController(
 		var email = info.Principal.FindFirstValue(ClaimTypes.Email);
 		return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email! });
 	}
-	
+
 	//
 	// POST: /Account/ExternalLoginConfirmation
 	[HttpPost]
 	[AllowAnonymous]
 	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl = "/")
+	public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model,
+		string returnUrl = "/")
 	{
 		ViewData["ReturnUrl"] = returnUrl;
 		if (!ModelState.IsValid)
@@ -317,6 +320,7 @@ public sealed class AccountController(
 		{
 			return View("Error");
 		}
+
 		var user = await userManager.FindByIdAsync(userId);
 		if (user == null)
 		{
@@ -446,11 +450,14 @@ public sealed class AccountController(
 		{
 			return View("Error");
 		}
+
 		//检索用户支持的双因素提供商
 		var userFactors = await userManager.GetValidTwoFactorProvidersAsync(user);
-		var factorOptions = userFactors.Select(purpose => new SelectListItem { Text = purpose, Value = purpose }).ToList();
+		var factorOptions = userFactors.Select(purpose => new SelectListItem { Text = purpose, Value = purpose })
+			.ToList();
 
-		return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
+		return View(new SendCodeViewModel
+			{ Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
 	}
 
 	//
@@ -495,7 +502,8 @@ public sealed class AccountController(
 			//await smsSender.SendSmsAsync(await userManager.GetPhoneNumberAsync(user), message);
 		}
 
-		return RedirectToAction(nameof(VerifyCode), new { Provider = model.SelectedProvider, model.ReturnUrl, model.RememberMe });
+		return RedirectToAction(nameof(VerifyCode),
+			new { Provider = model.SelectedProvider, model.ReturnUrl, model.RememberMe });
 	}
 
 	//
@@ -510,6 +518,7 @@ public sealed class AccountController(
 		{
 			return View("Error");
 		}
+
 		return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
 	}
 
@@ -528,7 +537,9 @@ public sealed class AccountController(
 		// 以下代码可防止针对双因素(2FA)代码的暴力攻击。
 		// 如果用户在指定时间内输入错误代码，则用户帐户将被删除
 		// 将被锁定指定的时间。
-		var result = await signInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe, model.RememberBrowser);
+		var result =
+			await signInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe,
+				model.RememberBrowser);
 		if (result.Succeeded)
 		{
 			var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
@@ -562,6 +573,7 @@ public sealed class AccountController(
 		{
 			return View("Error");
 		}
+
 		return View(new VerifyAuthenticatorCodeViewModel { ReturnUrl = returnUrl, RememberMe = rememberMe });
 	}
 
@@ -580,7 +592,8 @@ public sealed class AccountController(
 		// 以下代码可防止针对两个因素代码的暴力攻击。
 		// 如果用户在指定时间内输入错误代码，则用户帐户将被删除
 		// 将被锁定指定的时间。
-		var result = await signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, model.RememberMe, model.RememberBrowser);
+		var result =
+			await signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, model.RememberMe, model.RememberBrowser);
 		if (result.Succeeded)
 		{
 			return RedirectToLocal(model.ReturnUrl);
@@ -607,6 +620,7 @@ public sealed class AccountController(
 		{
 			return View("Error");
 		}
+
 		return View(new UseRecoveryCodeViewModel { ReturnUrl = returnUrl });
 	}
 
