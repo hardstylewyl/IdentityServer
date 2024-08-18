@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using IdentityServer.Domain.Entites;
 using IdentityServer.Domain.Repositories;
 using Microsoft.AspNetCore.Identity;
@@ -6,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace IdentityServer.Infrastructure.Identity;
 
 public class UserStore : IUserStore<User>,
+	                     IUserClaimStore<User>,
 						 IUserPasswordStore<User>,
 						 IUserSecurityStampStore<User>,
 						 IUserEmailStore<User>,
@@ -322,5 +324,55 @@ public class UserStore : IUserStore<User>,
 		}
 
 		return 0;
+	}
+
+	public Task<IList<Claim>> GetClaimsAsync(User user, CancellationToken cancellationToken)
+	{
+		IList<Claim> claims = user.Claims.Select(c => new Claim(c.Type, c.Value)).ToList();
+		return Task.FromResult(claims);
+	}
+
+	public Task AddClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+	{
+		foreach (var claim in claims)
+		{
+			user.Claims.Add(new UserClaim{Type = claim.Type, Value = claim.Value,User = user});
+		}
+
+		return Task.CompletedTask;
+	}
+
+	public Task ReplaceClaimAsync(User user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
+	{
+		var matchedClaims =  user.Claims.Where(uc => uc.Value == claim.Value && uc.Type == claim.Type);
+		foreach (var matchedClaim in matchedClaims)
+		{
+			matchedClaim.Value = newClaim.Value;
+			matchedClaim.Type = newClaim.Type;
+		}
+		
+		return Task.CompletedTask;
+	}
+
+	public Task RemoveClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+	{
+		foreach (var claim in claims)
+		{
+			var matchedClaims =  user.Claims.Where(uc => uc.Value == claim.Value && uc.Type == claim.Type);
+			foreach (var c in matchedClaims)
+			{
+				user.Claims.Remove(c);
+			}
+		}
+		
+		return Task.CompletedTask;
+	}
+
+	public async Task<IList<User>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
+	{
+		var query = _userRepository.Get(new UserQueryOptions { IncludeClaims = true })
+			.Where(u => u.Claims.Any(x => x.Type == claim.Type && x.Value == claim.Value));
+		
+		return await query.ToListAsync();
 	}
 }

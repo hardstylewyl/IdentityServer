@@ -8,9 +8,9 @@ public class User : Entity<long>, IAggregateRoot
 
 	public string NormalizedUserName { get; set; } = null!;
 
-	public string Email { get; set; } = null!;
+	public string? Email { get; set; } 
 
-	public string NormalizedEmail { get; set; } = null!;
+	public string? NormalizedEmail { get; set; } 
 
 	public bool EmailConfirmed { get; set; } 
 
@@ -22,7 +22,7 @@ public class User : Entity<long>, IAggregateRoot
 
 	public bool TwoFactorEnabled { get; set; }
 
-	public string? ConcurrencyStamp { get; set; }
+	public string? ConcurrencyStamp { get; set; } = Guid.NewGuid().ToString();
 
 	public string? SecurityStamp { get; set; }
 

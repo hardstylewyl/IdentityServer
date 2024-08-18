@@ -7,7 +7,7 @@ public abstract class Entity<TKey> : IHasKey<TKey>, ITrackable
 	public TKey Id { get; set; }
 
 	[Timestamp]
-	public byte[] RowVersion { get; set; }
+	public uint RowVersion { get; set; }
 
 	public DateTimeOffset CreatedDateTime { get; set; }
 

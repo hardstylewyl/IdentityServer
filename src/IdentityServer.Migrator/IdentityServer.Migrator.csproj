@@ -19,4 +19,8 @@
     <ProjectReference Include="..\IdentityServer.Persistence\IdentityServer.Persistence.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
 </Project>

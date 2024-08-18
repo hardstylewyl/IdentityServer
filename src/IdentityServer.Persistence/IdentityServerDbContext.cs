@@ -1,8 +1,11 @@
 using System.Data;
+using System.Reflection;
+using IdentityServer.Domain.Entites.Abstractions;
 using IdentityServer.Domain.Repositories;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace IdentityServer.Persistence;
 
