@@ -53,7 +53,7 @@ public class UserRepository : Repository<User, long>, IUserRepository
 
 		if (queryOptions.AsNoTracking)
 		{
-			query = query = query.AsNoTracking();
+			query = query.AsNoTracking();
 		}
 
 		return query;

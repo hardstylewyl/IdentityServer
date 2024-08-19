@@ -1,5 +1,6 @@
 using IdentityServer.Domain.Entites;
 using IdentityServer.Domain.Identity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,10 +30,18 @@ public static class IdentityServiceCollectionExtensions
 
 		ConfigureOptions(services);
 
-		services.ConfigureApplicationCookie(options =>
+		services.ConfigureApplicationCookie(o =>
 		{
-			options.LoginPath = "/Account/Login";
+			o.LoginPath = "/Account/Login";
+			o.Cookie.SameSite = SameSiteMode.Lax;
+			o.ExpireTimeSpan = TimeSpan.FromDays(3);
+		})
+		.ConfigureExternalCookie(o =>
+		{
+			o.Cookie.SameSite = SameSiteMode.Lax;
+			o.ExpireTimeSpan = TimeSpan.FromDays(3);
 		});
+		
 
 		return services;
 	}

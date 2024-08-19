@@ -6,17 +6,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IdentityServer.Infrastructure.Identity;
 
-public class UserStore : IUserStore<User>,
-	                     IUserClaimStore<User>,
-						 IUserPasswordStore<User>,
-						 IUserSecurityStampStore<User>,
-						 IUserEmailStore<User>,
-						 IUserPhoneNumberStore<User>,
-						 IUserTwoFactorStore<User>,
-						 IUserLockoutStore<User>,
-						 IUserAuthenticationTokenStore<User>,
-						 IUserAuthenticatorKeyStore<User>,
-						 IUserTwoFactorRecoveryCodeStore<User>
+public class UserStore : 
+	IUserLoginStore<User>,
+	IUserClaimStore<User>,
+	IUserPasswordStore<User>,
+	IUserSecurityStampStore<User>,
+	IUserEmailStore<User>,
+	IUserLockoutStore<User>,
+	IUserPhoneNumberStore<User>,
+	IQueryableUserStore<User>,
+	IUserTwoFactorStore<User>,
+	IUserAuthenticationTokenStore<User>,
+	IUserAuthenticatorKeyStore<User>,
+	IUserTwoFactorRecoveryCodeStore<User>
 {
 	private readonly IUnitOfWork _unitOfWork;
 	private readonly IUserRepository _userRepository;
@@ -26,7 +28,9 @@ public class UserStore : IUserStore<User>,
 		_unitOfWork = userRepository.UnitOfWork;
 		_userRepository = userRepository;
 	}
-
+	
+	public IQueryable<User> Users => _userRepository.GetQueryableSet();
+	
 	public void Dispose()
 	{
 	}
@@ -55,7 +59,7 @@ public class UserStore : IUserStore<User>,
 	public Task<User?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
 	{
 		return _userRepository.Get(new UserQueryOptions { IncludeTokens = true })
-			.FirstOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail);
+			.FirstOrDefaultAsync(x => x.NormalizedEmail == normalizedEmail, cancellationToken);
 	}
 
 	public async Task<User?> FindByIdAsync(string userId, CancellationToken cancellationToken)
@@ -66,13 +70,13 @@ public class UserStore : IUserStore<User>,
 		}
 
 		return await _userRepository.Get(new UserQueryOptions { IncludeTokens = true })
-			.FirstOrDefaultAsync(x => x.Id == id);
+			.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 	}
 
 	public Task<User?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
 	{
 		return _userRepository.Get(new UserQueryOptions { IncludeTokens = true })
-			.FirstOrDefaultAsync(x => x.NormalizedUserName == normalizedUserName);
+			.FirstOrDefaultAsync(x => x.NormalizedUserName == normalizedUserName, cancellationToken);
 	}
 
 	public Task<int> GetAccessFailedCountAsync(User user, CancellationToken cancellationToken)
@@ -125,9 +129,9 @@ public class UserStore : IUserStore<User>,
 		return Task.FromResult(user.PhoneNumberConfirmed);
 	}
 
-	public Task<string> GetSecurityStampAsync(User user, CancellationToken cancellationToken)
+	public Task<string?> GetSecurityStampAsync(User user, CancellationToken cancellationToken)
 	{
-		return Task.FromResult(user.SecurityStamp ?? string.Empty);
+		return Task.FromResult(user.SecurityStamp);
 	}
 
 	public Task<bool> GetTwoFactorEnabledAsync(User user, CancellationToken cancellationToken)
@@ -236,8 +240,8 @@ public class UserStore : IUserStore<User>,
 
 	public async Task<IdentityResult> UpdateAsync(User user, CancellationToken cancellationToken)
 	{
-		await _userRepository.AddOrUpdateAsync(user);
-		await _unitOfWork.SaveChangesAsync();
+		await _userRepository.AddOrUpdateAsync(user, cancellationToken);
+		await _unitOfWork.SaveChangesAsync(cancellationToken);
 		return IdentityResult.Success;
 	}
 
@@ -245,17 +249,19 @@ public class UserStore : IUserStore<User>,
 	private const string AuthenticatorKeyTokenName = "AuthenticatorKey";
 	private const string RecoveryCodeTokenName = "RecoveryCodes";
 
-	public Task<string?> GetTokenAsync(User user, string loginProvider, string name, CancellationToken cancellationToken)
+	public Task<string?> GetTokenAsync(User user, string loginProvider, string name,
+		CancellationToken cancellationToken)
 	{
 		var tokenEntity = user.Tokens.SingleOrDefault(
-				l => l.TokenName == name && l.LoginProvider == loginProvider);
+			l => l.TokenName == name && l.LoginProvider == loginProvider);
 		return Task.FromResult(tokenEntity?.TokenValue);
 	}
 
-	public async Task SetTokenAsync(User user, string loginProvider, string name, string? value, CancellationToken cancellationToken)
+	public async Task SetTokenAsync(User user, string loginProvider, string name, string? value,
+		CancellationToken cancellationToken)
 	{
 		var tokenEntity = user.Tokens.SingleOrDefault(
-				l => l.TokenName == name && l.LoginProvider == loginProvider);
+			l => l.TokenName == name && l.LoginProvider == loginProvider);
 		if (tokenEntity != null)
 		{
 			tokenEntity.TokenValue = value;
@@ -271,17 +277,18 @@ public class UserStore : IUserStore<User>,
 			});
 		}
 
-		await _unitOfWork.SaveChangesAsync();
+		await _unitOfWork.SaveChangesAsync(cancellationToken);
 	}
 
-	public async Task RemoveTokenAsync(User user, string loginProvider, string name, CancellationToken cancellationToken)
+	public async Task RemoveTokenAsync(User user, string loginProvider, string name,
+		CancellationToken cancellationToken)
 	{
 		var tokenEntity = user.Tokens.SingleOrDefault(
-				l => l.TokenName == name && l.LoginProvider == loginProvider);
+			l => l.TokenName == name && l.LoginProvider == loginProvider);
 		if (tokenEntity != null)
 		{
 			user.Tokens.Remove(tokenEntity);
-			await _unitOfWork.SaveChangesAsync();
+			await _unitOfWork.SaveChangesAsync(cancellationToken);
 		}
 	}
 
@@ -298,12 +305,15 @@ public class UserStore : IUserStore<User>,
 	public Task ReplaceCodesAsync(User user, IEnumerable<string> recoveryCodes, CancellationToken cancellationToken)
 	{
 		var mergedCodes = string.Join(";", recoveryCodes);
-		return SetTokenAsync(user, AuthenticatorStoreLoginProvider, RecoveryCodeTokenName, mergedCodes, cancellationToken);
+		return SetTokenAsync(user, AuthenticatorStoreLoginProvider, RecoveryCodeTokenName, mergedCodes,
+			cancellationToken);
 	}
 
 	public async Task<bool> RedeemCodeAsync(User user, string code, CancellationToken cancellationToken)
 	{
-		var mergedCodes = await GetTokenAsync(user, AuthenticatorStoreLoginProvider, RecoveryCodeTokenName, cancellationToken) ?? string.Empty;
+		var mergedCodes =
+			await GetTokenAsync(user, AuthenticatorStoreLoginProvider, RecoveryCodeTokenName, cancellationToken) ??
+			string.Empty;
 		var splitCodes = mergedCodes.Split(';');
 		if (splitCodes.Contains(code))
 		{
@@ -317,7 +327,9 @@ public class UserStore : IUserStore<User>,
 
 	public async Task<int> CountCodesAsync(User user, CancellationToken cancellationToken)
 	{
-		var mergedCodes = await GetTokenAsync(user, AuthenticatorStoreLoginProvider, RecoveryCodeTokenName, cancellationToken) ?? string.Empty;
+		var mergedCodes =
+			await GetTokenAsync(user, AuthenticatorStoreLoginProvider, RecoveryCodeTokenName, cancellationToken) ??
+			string.Empty;
 		if (mergedCodes.Length > 0)
 		{
 			return mergedCodes.Split(';').Length;
@@ -326,53 +338,80 @@ public class UserStore : IUserStore<User>,
 		return 0;
 	}
 
-	public Task<IList<Claim>> GetClaimsAsync(User user, CancellationToken cancellationToken)
+	public async Task<IList<Claim>> GetClaimsAsync(User user, CancellationToken cancellationToken)
 	{
+		user = await _userRepository.Get(new UserQueryOptions { IncludeClaims = true })
+			.FirstAsync(x => x.Id == user.Id, cancellationToken);
+
 		IList<Claim> claims = user.Claims.Select(c => new Claim(c.Type, c.Value)).ToList();
-		return Task.FromResult(claims);
+		return claims;
 	}
 
-	public Task AddClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+	public async Task AddClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
 	{
+		user = await _userRepository.Get(new UserQueryOptions { IncludeClaims = true })
+			.FirstAsync(x => x.Id == user.Id, cancellationToken);
+
 		foreach (var claim in claims)
 		{
-			user.Claims.Add(new UserClaim{Type = claim.Type, Value = claim.Value,User = user});
+			user.Claims.Add(new UserClaim { Type = claim.Type, Value = claim.Value, User = user });
 		}
-
-		return Task.CompletedTask;
 	}
 
-	public Task ReplaceClaimAsync(User user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
+	public async Task ReplaceClaimAsync(User user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
 	{
-		var matchedClaims =  user.Claims.Where(uc => uc.Value == claim.Value && uc.Type == claim.Type);
+		user = await _userRepository.Get(new UserQueryOptions { IncludeClaims = true })
+			.FirstAsync(x => x.Id == user.Id, cancellationToken);
+
+		var matchedClaims = user.Claims.Where(uc => uc.Value == claim.Value && uc.Type == claim.Type);
 		foreach (var matchedClaim in matchedClaims)
 		{
 			matchedClaim.Value = newClaim.Value;
 			matchedClaim.Type = newClaim.Type;
 		}
-		
-		return Task.CompletedTask;
 	}
 
-	public Task RemoveClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+	public async Task RemoveClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
 	{
+		user = await _userRepository.Get(new UserQueryOptions { IncludeClaims = true })
+			.FirstAsync(x => x.Id == user.Id, cancellationToken);
+
 		foreach (var claim in claims)
 		{
-			var matchedClaims =  user.Claims.Where(uc => uc.Value == claim.Value && uc.Type == claim.Type);
+			var matchedClaims = user.Claims.Where(uc => uc.Value == claim.Value && uc.Type == claim.Type);
 			foreach (var c in matchedClaims)
 			{
 				user.Claims.Remove(c);
 			}
 		}
-		
-		return Task.CompletedTask;
 	}
 
 	public async Task<IList<User>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
 	{
 		var query = _userRepository.Get(new UserQueryOptions { IncludeClaims = true })
 			.Where(u => u.Claims.Any(x => x.Type == claim.Type && x.Value == claim.Value));
-		
-		return await query.ToListAsync();
+
+		return await query.ToListAsync(cancellationToken);
 	}
+
+	public Task AddLoginAsync(User user, UserLoginInfo login, CancellationToken cancellationToken)
+	{
+		throw new NotImplementedException();
+	}
+
+	public Task RemoveLoginAsync(User user, string loginProvider, string providerKey, CancellationToken cancellationToken)
+	{
+		throw new NotImplementedException();
+	}
+
+	public Task<IList<UserLoginInfo>> GetLoginsAsync(User user, CancellationToken cancellationToken)
+	{
+		throw new NotImplementedException();
+	}
+
+	public Task<User?> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
+	{
+		throw new NotImplementedException();
+	}
+	
 }
