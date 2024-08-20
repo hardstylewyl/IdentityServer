@@ -95,89 +95,7 @@ public sealed class AccountController(
 
 	#endregion 登录
 
-	#region 注册
-
-	//
-	// GET: /Account/Register
-	[HttpGet]
-	[AllowAnonymous]
-	public IActionResult Register(string returnUrl = "/")
-	{
-		ViewData["ReturnUrl"] = returnUrl;
-		return View();
-	}
-
-	//
-	// POST: /Account/Register
-	[HttpPost]
-	[AllowAnonymous]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = "/")
-	{
-		ViewData["ReturnUrl"] = returnUrl;
-		if (!ModelState.IsValid)
-		{
-			return View(model);
-		}
-
-		var user = new User { UserName = model.Username, Email = model.Email };
-		var result = await userManager.CreateAsync(user, model.Password);
-
-		//注册失败
-		if (!result.Succeeded)
-		{
-			AddErrors(result);
-			return View(model);
-		}
-
-		//添加一些默认的声明信息
-		result = await userManager.AddClaimsAsync(user, [
-			new(Claims.Gender, ""),
-			new(Claims.Address, ""),
-			new(Claims.Birthdate, ""),
-			new Claim(Claims.Nickname, model.Nickname),
-			new Claim(Claims.Name, model.Nickname),
-			//使用生成的头像
-			new Claim(Claims.Picture, $"https://ui-avatars.com/api/?name={model.Nickname}&background=0D8ABC")
-		]);
-
-		//声明信息添加失败，删除用户
-		if (!result.Succeeded)
-		{
-			await userManager.DeleteAsync(user);
-			AddErrors(result);
-			return View(model);
-		}
-
-		//有关如何启用帐户确认和密码重置的详细信息，请访问 http://go.microsoft.com/fwlink/?LinkID=532713
-		//发送包含此链接的电子邮件
-		//var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-		//var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
-		//await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
-		//    "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>");
-
-		await signInManager.SignInAsync(user, isPersistent: false);
-		//TODO:记录登录成功日志
-		return RedirectToLocal(returnUrl);
-	}
-
-	#endregion 注册
-
-	#region 登出
-
-	//
-	// POST: /Account/LogOff
-	[HttpPost]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> LogOff()
-	{
-		await signInManager.SignOutAsync();
-		return RedirectToAction(nameof(HomeController.Index), "Home");
-	}
-
-	#endregion 登出
-
-	#region 外部登录
+	#region 外部登录 （External Login）
 
 	//
 	// POST: /Account/ExternalLogin
@@ -309,6 +227,210 @@ public sealed class AccountController(
 
 	#endregion 外部登录
 
+	#region 双因素登录（2FA）相关
+
+	//
+	// GET: /Account/SendCode
+	[HttpGet]
+	[AllowAnonymous]
+	public async Task<ActionResult> SendCode(string returnUrl = "/", bool rememberMe = false)
+	{
+		var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
+		if (user == null)
+		{
+			return View("Error");
+		}
+
+		//检索用户支持的双因素提供商
+		var userFactors = await userManager.GetValidTwoFactorProvidersAsync(user);
+		var factorOptions = userFactors.Select(purpose => new SelectListItem { Text = purpose, Value = purpose })
+			.ToList();
+
+		return View(new SendCodeViewModel
+			{ Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
+	}
+
+	//
+	// POST: /Account/SendCode
+	[HttpPost]
+	[AllowAnonymous]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> SendCode(SendCodeViewModel model)
+	{
+		if (!ModelState.IsValid)
+		{
+			return View();
+		}
+
+		var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
+		if (user == null)
+		{
+			return View("Error");
+		}
+
+		//当选择为身份验证器时，转到验证器界面
+		if (model.SelectedProvider == "Authenticator")
+		{
+			return RedirectToAction(nameof(VerifyAuthenticatorCode), new { model.ReturnUrl, model.RememberMe });
+		}
+
+		//生成code并发送
+		var code = await userManager.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
+		if (string.IsNullOrWhiteSpace(code))
+		{
+			return View("Error");
+		}
+
+		//TODO：根据选择的类型去发送code
+		var message = "Your security code is: " + code;
+		if (model.SelectedProvider == "Email")
+		{
+			//await emailSender.SendEmailAsync(await userManager.GetEmailAsync(user), "Security Code", message);
+		}
+		else if (model.SelectedProvider == "Phone")
+		{
+			//await smsSender.SendSmsAsync(await userManager.GetPhoneNumberAsync(user), message);
+		}
+
+		return RedirectToAction(nameof(VerifyCode),
+			new { Provider = model.SelectedProvider, model.ReturnUrl, model.RememberMe });
+	}
+
+	//
+	// GET: /Account/VerifyCode
+	[HttpGet]
+	[AllowAnonymous]
+	public async Task<IActionResult> VerifyCode(string provider, bool rememberMe, string returnUrl = "/")
+	{
+		// 要求用户已经通过用户名/密码或外部登录登录
+		var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
+		if (user == null)
+		{
+			return View("Error");
+		}
+
+		return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
+	}
+
+	//
+	// POST: /Account/VerifyCode
+	[HttpPost]
+	[AllowAnonymous]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> VerifyCode(VerifyCodeViewModel model)
+	{
+		if (!ModelState.IsValid)
+		{
+			return View(model);
+		}
+
+		// 以下代码可防止针对双因素(2FA)代码的暴力攻击。
+		// 如果用户在指定时间内输入错误代码，则用户帐户将被删除
+		// 将被锁定指定的时间。
+		var result =
+			await signInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe,
+				model.RememberBrowser);
+		if (result.Succeeded)
+		{
+			var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
+			//TODO:记录登录成功
+			await userManager.ResetAccessFailedCountAsync(user!);
+			return RedirectToLocal(model.ReturnUrl);
+		}
+
+		if (result.IsLockedOut)
+		{
+			return View("Lockout");
+		}
+
+		ModelState.AddModelError(string.Empty, "验证码错误");
+		return View(model);
+	}
+
+	#endregion 双因素登录（2FA）相关
+
+	#region 注册
+
+	//
+	// GET: /Account/Register
+	[HttpGet]
+	[AllowAnonymous]
+	public IActionResult Register(string returnUrl = "/")
+	{
+		ViewData["ReturnUrl"] = returnUrl;
+		return View();
+	}
+
+	//
+	// POST: /Account/Register
+	[HttpPost]
+	[AllowAnonymous]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = "/")
+	{
+		ViewData["ReturnUrl"] = returnUrl;
+		if (!ModelState.IsValid)
+		{
+			return View(model);
+		}
+
+		var user = new User { UserName = model.Username, Email = model.Email };
+		var result = await userManager.CreateAsync(user, model.Password);
+
+		//注册失败
+		if (!result.Succeeded)
+		{
+			AddErrors(result);
+			return View(model);
+		}
+
+		//添加一些默认的声明信息
+		result = await userManager.AddClaimsAsync(user, [
+			new(Claims.Gender, ""),
+			new(Claims.Address, ""),
+			new(Claims.Birthdate, ""),
+			new Claim(Claims.Nickname, model.Nickname),
+			new Claim(Claims.Name, model.Nickname),
+			//使用生成的头像
+			new Claim(Claims.Picture, $"https://ui-avatars.com/api/?name={model.Nickname}&background=0D8ABC")
+		]);
+
+		//声明信息添加失败，删除用户
+		if (!result.Succeeded)
+		{
+			await userManager.DeleteAsync(user);
+			AddErrors(result);
+			return View(model);
+		}
+
+		//有关如何启用帐户确认和密码重置的详细信息，请访问 http://go.microsoft.com/fwlink/?LinkID=532713
+		//发送包含此链接的电子邮件
+		//var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+		//var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
+		//await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
+		//    "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>");
+
+		await signInManager.SignInAsync(user, isPersistent: false);
+		//TODO:记录登录成功日志
+		return RedirectToLocal(returnUrl);
+	}
+
+	#endregion 注册
+
+	#region 登出
+
+	//
+	// POST: /Account/LogOff
+	[HttpPost]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> LogOff()
+	{
+		await signInManager.SignOutAsync();
+		return RedirectToAction(nameof(HomeController.Index), "Home");
+	}
+
+	#endregion 登出
+	
 	#region 邮箱确认
 
 	// GET: /Account/ConfirmEmail
@@ -436,128 +558,6 @@ public sealed class AccountController(
 	}
 
 	#endregion 重置密码
-
-	#region 双因素（2FA）相关
-
-	//
-	// GET: /Account/SendCode
-	[HttpGet]
-	[AllowAnonymous]
-	public async Task<ActionResult> SendCode(string returnUrl = "/", bool rememberMe = false)
-	{
-		var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
-		if (user == null)
-		{
-			return View("Error");
-		}
-
-		//检索用户支持的双因素提供商
-		var userFactors = await userManager.GetValidTwoFactorProvidersAsync(user);
-		var factorOptions = userFactors.Select(purpose => new SelectListItem { Text = purpose, Value = purpose })
-			.ToList();
-
-		return View(new SendCodeViewModel
-			{ Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
-	}
-
-	//
-	// POST: /Account/SendCode
-	[HttpPost]
-	[AllowAnonymous]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> SendCode(SendCodeViewModel model)
-	{
-		if (!ModelState.IsValid)
-		{
-			return View();
-		}
-
-		var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
-		if (user == null)
-		{
-			return View("Error");
-		}
-
-		//当选择为身份验证器时，转到验证器界面
-		if (model.SelectedProvider == "Authenticator")
-		{
-			return RedirectToAction(nameof(VerifyAuthenticatorCode), new { model.ReturnUrl, model.RememberMe });
-		}
-
-		//生成code并发送
-		var code = await userManager.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
-		if (string.IsNullOrWhiteSpace(code))
-		{
-			return View("Error");
-		}
-
-		//TODO：根据选择的类型去发送code
-		var message = "Your security code is: " + code;
-		if (model.SelectedProvider == "Email")
-		{
-			//await emailSender.SendEmailAsync(await userManager.GetEmailAsync(user), "Security Code", message);
-		}
-		else if (model.SelectedProvider == "Phone")
-		{
-			//await smsSender.SendSmsAsync(await userManager.GetPhoneNumberAsync(user), message);
-		}
-
-		return RedirectToAction(nameof(VerifyCode),
-			new { Provider = model.SelectedProvider, model.ReturnUrl, model.RememberMe });
-	}
-
-	//
-	// GET: /Account/VerifyCode
-	[HttpGet]
-	[AllowAnonymous]
-	public async Task<IActionResult> VerifyCode(string provider, bool rememberMe, string returnUrl = "/")
-	{
-		// 要求用户已经通过用户名/密码或外部登录登录
-		var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
-		if (user == null)
-		{
-			return View("Error");
-		}
-
-		return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
-	}
-
-	//
-	// POST: /Account/VerifyCode
-	[HttpPost]
-	[AllowAnonymous]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> VerifyCode(VerifyCodeViewModel model)
-	{
-		if (!ModelState.IsValid)
-		{
-			return View(model);
-		}
-
-		// 以下代码可防止针对双因素(2FA)代码的暴力攻击。
-		// 如果用户在指定时间内输入错误代码，则用户帐户将被删除
-		// 将被锁定指定的时间。
-		var result =
-			await signInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe,
-				model.RememberBrowser);
-		if (result.Succeeded)
-		{
-			var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
-			//TODO:记录登录成功
-			await userManager.ResetAccessFailedCountAsync(user!);
-			return RedirectToLocal(model.ReturnUrl);
-		}
-
-		if (result.IsLockedOut)
-		{
-			return View("Lockout");
-		}
-
-		ModelState.AddModelError(string.Empty, "验证码错误");
-		return View(model);
-	}
-
-	#endregion 双因素（2FA）相关
 
 	#region 验证器登录方案
 

@@ -72,12 +72,17 @@ services.AddOpenIddict()
 		// o.AddEncryptionCertificate(identityServerOptions.EncryptionCertificate.FindCertificate())
 		// 	.AddSigningCertificate(identityServerOptions.SigningCertificate.FindCertificate());
 
-		//支持客户端/密码/设备码/授权码/刷新令牌授权类型
+		//支持客户端/密码/设备码/授权码/刷新令牌/混合授权类型
 		o.AllowClientCredentialsFlow()
 			.AllowPasswordFlow()
 			.AllowDeviceCodeFlow()
 			.AllowAuthorizationCodeFlow()
-			.AllowRefreshTokenFlow();
+			.AllowRefreshTokenFlow()
+			.AllowHybridFlow();
+			// .AllowCustomFlow()
+			// .AllowImplicitFlow()
+			// .AllowNoneFlow()
+
 
 		//PKCE只在客户端无法保护自己的client_secret的时候使用
 		o.RequireProofKeyForCodeExchange();

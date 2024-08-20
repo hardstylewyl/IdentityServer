@@ -6,34 +6,22 @@ namespace IdentityServer.Domain.Entites;
 public class UserLoginHistory : Entity<long>
 {
 	public long UserId { get; set; }
-
-	/// <summary>
-	///  登录时间
-	/// </summary>
+	
+	//  登录时间
 	public DateTimeOffset LoginTimeOnUtc { get; set; }
-
-	/// <summary>
-	/// IP详情
-	/// </summary>
+	
+	// IP详情
 	public IpAddressDetails IpInfo { get; set; }
-
-	/// <summary>
-	/// 登录方式
-	/// </summary>
+	
+	// 登录方式
 	public string LoginMethod { get; set; }
-
-	/// <summary>
-	/// 登录提供商
-	/// </summary>
+	
+	// 登录提供商
 	public string LoginProvider { get; set; }
-
-	/// <summary>
-	/// 浏览器UA标识
-	/// </summary>
+	
+	// 浏览器UA标识
 	public string UserAgent { get; set; }
-
-	/// <summary>
-	/// 登录成功是否
-	/// </summary>
+	
+	// 登录成功是否
 	public bool LoginSuccess { get; set; }
 }

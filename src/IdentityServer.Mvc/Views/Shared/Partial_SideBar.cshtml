@@ -1,0 +1,72 @@
+﻿<style>
+	:root {
+		--default-active-top: 136px;
+	}
+
+	.nav-item .nav-link
+	{
+		color: #000;
+	}
+
+	.nav-item .nav-link:hover
+	{
+		background-color: #eee;
+	}
+
+	.nav-item.active
+	{
+		background-color: #eee;
+		font-weight: 600;
+	}
+
+	.nav-item.active::after {
+		content: '';
+		width: 4px;
+		position: absolute;
+		left: -4px;
+		top: var(--default-active-top);
+		background-color: #007bff;
+		height: 40px;
+		transition: top 0.2s ease; /* 添加过渡效果 */
+	}
+</style>
+
+<nav class="position-sticky" style="background-color:#f0f0f0;">
+	<div class="d-flex align-items-center p-3">
+		@* 头像 *@
+		<div>
+			<img src="https://ui-avatars.com/api/?name=2@qq.com&background=0D8ABC" alt="" class="rounded-circle"/>
+		</div>
+		@* 信息 *@
+		<div class="ms-3">
+			<div>hardstyle</div>
+			<div>(827778732@qq.com)</div>
+		</div>
+	</div>
+	<ul class="nav flex-column">
+		<li class="nav-item">
+			<a class="nav-link d-flex align-items-center" asp-controller="Manage" asp-action="ChangePassword">
+				<img src="~/images/icon_账户.svg" alt="">
+				<span class="ms-1">账号管理</span>
+			</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link d-flex align-items-center" asp-controller="Manage" asp-action="ProfileManager">
+				<img src="~/images/icon_个人资料.svg" alt="">
+				<span class="ms-1">个人资料</span>
+			</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link d-flex align-items-center" asp-controller="Manage" asp-action="ApplicationManager">
+				<img src="~/images/icon_应用管理.svg" alt="">
+				<span class="ms-1">第三方应用</span>
+			</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link d-flex align-items-center" asp-controller="Manage" asp-action="LoginHistory">
+				<img src="~/images/icon_历史.svg" alt="">
+				<span class="ms-1">登录历史</span>
+			</a>
+		</li>
+	</ul>
+</nav>

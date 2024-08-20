@@ -1,0 +1,34 @@
+﻿@model AccountManageViewModel
+@{
+	var phoneLabel = Model.PhoneNumber == null ? "(未绑定手机)" : Model.PhoneNumberConfirmed ? "" : "(未验证)";
+	var emailLabel = Model.Email == null ? "(未绑定邮箱)" : Model.EmailConfirmed ? "" : "(未验证)";
+}
+
+<div class="p-4">
+	<h3>账号管理</h3>
+	<hr>
+	@* 手机号 *@
+	<div>
+		<div>
+			<span>手机号@(phoneLabel)</span>
+			@* 手机未添加 *@
+			@if (!Model.HasPhoneNumber)
+			{
+				<a asp-controller="Manage" asp-action="AddPhoneNumber">绑定</a>
+			}
+		</div>
+		<input asp-for="PhoneNumber" type="text" disabled/>
+		<button class="btn btn-warning">更换号码</button>
+	</div>
+	@* 邮箱 *@
+	<div>
+		<div>
+			<span>邮箱@(emailLabel)</span>
+			@* 邮箱未添加 *@
+			@if (!Model.HasEmail)
+			{
+				<a asp-controller="Manage" asp-action="AddEmail">绑定</a>
+			}
+		</div>
+	</div>
+</div>

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IdentityServer.Infrastructure.Identity;
 
-public class UserStore : 
+public class UserStore :
 	IUserLoginStore<User>,
 	IUserClaimStore<User>,
 	IUserPasswordStore<User>,
@@ -28,9 +28,9 @@ public class UserStore :
 		_unitOfWork = userRepository.UnitOfWork;
 		_userRepository = userRepository;
 	}
-	
+
 	public IQueryable<User> Users => _userRepository.GetQueryableSet();
-	
+
 	public void Dispose()
 	{
 	}
@@ -394,24 +394,54 @@ public class UserStore :
 		return await query.ToListAsync(cancellationToken);
 	}
 
-	public Task AddLoginAsync(User user, UserLoginInfo login, CancellationToken cancellationToken)
+	public async Task AddLoginAsync(User user, UserLoginInfo login, CancellationToken cancellationToken)
 	{
-		throw new NotImplementedException();
+		user = await _userRepository
+			.Get(new UserQueryOptions { IncludeUserLinks = true })
+			.FirstAsync(x => x.Id == user.Id, cancellationToken);
+		
+		user.UserLinks.Add(new UserLink
+		{
+			LoginProvider = login.LoginProvider,
+			ProviderDisplayName = login.ProviderDisplayName,
+			ProviderKey = login.ProviderKey,
+			UserId = user.Id,
+			LoginName = "None"
+		});
 	}
 
-	public Task RemoveLoginAsync(User user, string loginProvider, string providerKey, CancellationToken cancellationToken)
+	public async Task RemoveLoginAsync(User user, string loginProvider, string providerKey,
+		CancellationToken cancellationToken)
 	{
-		throw new NotImplementedException();
+		user = await _userRepository
+			.Get(new UserQueryOptions { IncludeUserLinks = true })
+			.FirstAsync(x => x.Id == user.Id, cancellationToken);
+
+		var entry =  user.UserLinks
+			.FirstOrDefault(x => x.LoginProvider == loginProvider && x.ProviderKey == providerKey);
+		if (entry != null)
+		{
+			user.UserLinks.Remove(entry);
+		}
 	}
 
-	public Task<IList<UserLoginInfo>> GetLoginsAsync(User user, CancellationToken cancellationToken)
+	public async Task<IList<UserLoginInfo>> GetLoginsAsync(User user, CancellationToken cancellationToken)
 	{
-		throw new NotImplementedException();
+		 user = await _userRepository
+			.Get(new UserQueryOptions { IncludeUserLinks = true })
+			.FirstAsync(x => x.Id == user.Id, cancellationToken);
+
+		 return user.UserLinks
+			 .Select(x => new UserLoginInfo(x.LoginProvider, x.ProviderKey, x.ProviderDisplayName))
+			 .ToList();
 	}
 
 	public Task<User?> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
 	{
-		throw new NotImplementedException();
+		return _userRepository
+			.Get(new UserQueryOptions { IncludeUserLinks = true })
+			.FirstOrDefaultAsync(x => x.UserLinks
+				.Any(y => y.LoginProvider == loginProvider 
+				          && y.ProviderKey == providerKey), cancellationToken);
 	}
-	
 }

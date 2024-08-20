@@ -1,13 +1,166 @@
 ﻿<!DOCTYPE html>
 
-<html>
+<html lang="zh">
 <head>
-    <meta name="viewport" content="width=device-width" />
-    <title>@ViewBag.Title</title>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<title>@ViewData["Title"]</title>
+	<environment include="Development">
+		<link rel="stylesheet" href="~/lib/layui/css/layui.css">
+		<link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.css"/>
+	</environment>
+	<environment exclude="Development">
+		<link rel="stylesheet" href="~/lib/layui/css/layui.css">
+		<link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css"/>
+	</environment>
+	<style>
+		:root {
+			--default-active-top: 136px;
+		}
+		
+		.nav-item .nav-link
+		{
+			color: #000;
+		}
+
+		.nav-item .nav-link:hover
+		{
+			background-color: #eee;
+		}
+
+		.nav-item.active
+		{
+			background-color: #eee;
+			font-weight: 600;
+		}
+
+		.nav-item.active::after {
+			content: '';
+			width: 4px;
+			position: absolute;
+			left: -4px;
+			top: var(--default-active-top);
+			background-color: #007bff;
+			height: 40px;
+			transition: top 0.2s ease; /* 添加过渡效果 */
+		}
+	</style>
 </head>
 <body>
-    <div>
-        @RenderBody()
-    </div>
+@* TODO：头 *@
+@{ await Html.RenderPartialAsync("Partial_TopBar"); }
+
+@* TODO：主体 *@
+<main class="container-lg mt-4">
+	<section class="row">
+		<div class="col-3">
+			@* 侧边导航 *@
+			@* @{ await Html.RenderPartialAsync("Partial_SideBar"); } *@
+			<nav class="position-sticky">
+				<div class="d-flex align-items-center p-3">
+					@* 头像 *@
+					<div>
+						<img src="https://ui-avatars.com/api/?name=2@qq.com&background=0D8ABC" alt="" class="rounded-circle"/>
+					</div>
+					@* 信息 *@
+					<div class="ms-3">
+						<div>HardStyle</div>
+						<div>(827778732@qq.com)</div>
+					</div>
+				</div>
+				<ul class="nav flex-column">
+					<li class="nav-item">
+						<a class="nav-link d-flex align-items-center" asp-controller="Manage" asp-action="AccountManage">
+							<img src="~/images/icon_账户.svg" alt="">
+							<span class="ms-1">账号管理</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link d-flex align-items-center" asp-controller="Manage" asp-action="ManageProfile">
+							<img src="~/images/icon_个人资料.svg" alt="">
+							<span class="ms-1">个人资料</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link d-flex align-items-center" asp-controller="Manage" asp-action="Application">
+							<img src="~/images/icon_应用管理.svg" alt="">
+							<span class="ms-1">第三方应用</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link d-flex align-items-center" asp-controller="Manage" asp-action="LoginHistory">
+							<img src="~/images/icon_历史.svg" alt="">
+							<span class="ms-1">登录历史</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+		<div class="col-9">
+			@* 内容区域 *@
+			@RenderBody()
+		</div>
+	</section>
+</main>
+
+@* TODO：脚 *@
+<footer>
+
+</footer>
+
+<environment include="Development">
+	<script src="~/lib/jquery/jquery-3.7.1.js"></script>
+	<script src="~/lib/layui/layui.js"></script>
+	<script src="~/lib/bootstrap/js/bootstrap.bundle.js"></script>
+</environment>
+<environment exclude="Development">
+	<script src="~/lib/jquery/jquery-3.7.1.min.js"></script>
+	<script src="~/lib/layui/layui.js"></script>
+	<script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+</environment>
+@* 提供一个占位符用于按需的渲染额外的脚本 *@
+@await RenderSectionAsync("Scripts", required: false)
+<script>
+	(function($){
+		'use strict'
+		
+		const LINE_CSS_VAR = "--default-active-top"
+		const DEFAULT_TOP = 136
+		const lis = $('.nav li')
+
+		function setLineCssVar(val){
+			document.documentElement.style
+				.setProperty(LINE_CSS_VAR, DEFAULT_TOP + val + 'px')
+		}
+
+		function changeActiveNavItem(url){
+			//根据url获取指定的li元素		
+			const li =  $('.nav li a').filter(function (){
+				const pathname = new URL(this.href).pathname
+				return url.includes(pathname)
+			}).parent()
+
+			//清除所有的active状态
+			lis.removeClass('active')
+			//设置当前li为活跃元素
+			li.addClass('active')
+			//设置垂直线位置
+			setLineCssVar( (li.index()-1) * 40 )
+		}
+
+		//鼠标移入li元素
+		lis.on('mouseover',function (){
+			setLineCssVar( ($(this).index()-1) * 40 )
+		})
+
+		//鼠标移出li元素
+		lis.on('mouseout',function (){
+			const navItemActive = $('.nav .nav-item.active').index();
+			setLineCssVar( (navItemActive-1) * 40 )
+		})
+
+		changeActiveNavItem(window.location.href)
+	})(jQuery)
+</script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 
-<html lang="en">
+<html lang="zh">
 
 <head>
 	<meta charset="utf-8"/>
@@ -16,7 +16,7 @@
 	</environment>
 	<style>
 		body{
-			background-image: url('./images/bg_manage.jpg');
+			background-image: url("/images/bg_manage.jpg");
 			background-repeat:no-repeat;
 		}
 	</style>
@@ -27,11 +27,9 @@
 @{ await Html.RenderPartialAsync("Partial_TopBar"); }
 
 @* TODO：主体 *@
-<main>
-	<section class="container-lg">
-		<div class="p-5 bg-body-secondary">
-			@RenderBody()
-		</div>
+<main class="container-lg">
+	<section class="p-5 bg-body-secondary">
+		@RenderBody()
 	</section>
 </main>
 
