@@ -9,7 +9,7 @@
   <ItemGroup>
 	  <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="IP2Region.Net" Version="2.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
   </ItemGroup>
 
   <ItemGroup>
