@@ -37,9 +37,9 @@ public sealed class ManageController(
 		var model = new AccountManageViewModel
 		{
 			PhoneNumber = await userManager.GetPhoneNumberAsync(user),
-			PhoneNumberConfirmed =await userManager.IsEmailConfirmedAsync(user),
-			Email =  await userManager.GetEmailAsync(user),
-			EmailConfirmed =await userManager.IsEmailConfirmedAsync(user),
+			PhoneNumberConfirmed = await userManager.IsEmailConfirmedAsync(user),
+			Email = await userManager.GetEmailAsync(user),
+			EmailConfirmed = await userManager.IsEmailConfirmedAsync(user),
 			HasPassword = await userManager.HasPasswordAsync(user),
 			TwoFactorEnabled = await userManager.GetTwoFactorEnabledAsync(user),
 			BrowserRemembered = await signInManager.IsTwoFactorClientRememberedAsync(user),
@@ -49,7 +49,7 @@ public sealed class ManageController(
 		return View(model);
 	}
 
-	#endregion
+	#endregion 账户管理
 
 	#region 鉴权器
 
@@ -82,8 +82,8 @@ public sealed class ManageController(
 		return View("Error");
 	}
 
-	#endregion
-	
+	#endregion 鉴权器
+
 	#region 移除/关联 三方账户
 
 	//
@@ -418,7 +418,7 @@ public sealed class ManageController(
 		return View();
 	}
 
-	#endregion 个人信息
+	#endregion 个人资料
 
 	#region 第三方应用
 
@@ -430,8 +430,8 @@ public sealed class ManageController(
 		return View();
 	}
 
-	#endregion
-	
+	#endregion 第三方应用
+
 	#region 登录历史
 
 	//

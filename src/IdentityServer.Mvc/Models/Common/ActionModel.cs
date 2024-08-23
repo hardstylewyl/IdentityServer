@@ -1,4 +1,4 @@
-﻿namespace IdentityServer.Mvc.Models.Common;
+namespace IdentityServer.Mvc.Models.Common;
 
 public enum ActionType
 {

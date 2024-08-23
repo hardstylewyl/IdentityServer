@@ -399,7 +399,7 @@ public class UserStore :
 		user = await _userRepository
 			.Get(new UserQueryOptions { IncludeUserLinks = true })
 			.FirstAsync(x => x.Id == user.Id, cancellationToken);
-		
+
 		user.UserLinks.Add(new UserLink
 		{
 			LoginProvider = login.LoginProvider,
@@ -417,7 +417,7 @@ public class UserStore :
 			.Get(new UserQueryOptions { IncludeUserLinks = true })
 			.FirstAsync(x => x.Id == user.Id, cancellationToken);
 
-		var entry =  user.UserLinks
+		var entry = user.UserLinks
 			.FirstOrDefault(x => x.LoginProvider == loginProvider && x.ProviderKey == providerKey);
 		if (entry != null)
 		{
@@ -427,13 +427,13 @@ public class UserStore :
 
 	public async Task<IList<UserLoginInfo>> GetLoginsAsync(User user, CancellationToken cancellationToken)
 	{
-		 user = await _userRepository
-			.Get(new UserQueryOptions { IncludeUserLinks = true })
-			.FirstAsync(x => x.Id == user.Id, cancellationToken);
+		user = await _userRepository
+		   .Get(new UserQueryOptions { IncludeUserLinks = true })
+		   .FirstAsync(x => x.Id == user.Id, cancellationToken);
 
-		 return user.UserLinks
-			 .Select(x => new UserLoginInfo(x.LoginProvider, x.ProviderKey, x.ProviderDisplayName))
-			 .ToList();
+		return user.UserLinks
+			.Select(x => new UserLoginInfo(x.LoginProvider, x.ProviderKey, x.ProviderDisplayName))
+			.ToList();
 	}
 
 	public Task<User?> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
@@ -441,7 +441,7 @@ public class UserStore :
 		return _userRepository
 			.Get(new UserQueryOptions { IncludeUserLinks = true })
 			.FirstOrDefaultAsync(x => x.UserLinks
-				.Any(y => y.LoginProvider == loginProvider 
-				          && y.ProviderKey == providerKey), cancellationToken);
+				.Any(y => y.LoginProvider == loginProvider
+						  && y.ProviderKey == providerKey), cancellationToken);
 	}
 }

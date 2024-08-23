@@ -225,7 +225,7 @@ public sealed class AccountController(
 		return RedirectToLocal(returnUrl);
 	}
 
-	#endregion 外部登录
+	#endregion 外部登录 （External Login）
 
 	#region 双因素登录（2FA）相关
 
@@ -247,7 +247,7 @@ public sealed class AccountController(
 			.ToList();
 
 		return View(new SendCodeViewModel
-			{ Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
+		{ Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
 	}
 
 	//
@@ -430,7 +430,7 @@ public sealed class AccountController(
 	}
 
 	#endregion 登出
-	
+
 	#region 邮箱确认
 
 	// GET: /Account/ConfirmEmail

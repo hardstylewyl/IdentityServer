@@ -1,4 +1,4 @@
-﻿using IdentityServer.Mvc.ConfigurationOptions.ExternalLogin;
+using IdentityServer.Mvc.ConfigurationOptions.ExternalLogin;
 
 namespace IdentityServer.Mvc.ConfigurationOptions;
 

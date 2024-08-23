@@ -1,6 +1,5 @@
-﻿namespace IdentityServer.Mvc.Models.ManageViewModels;
+namespace IdentityServer.Mvc.Models.ManageViewModels;
 
 public sealed class ApplicationViewModel
 {
-		
 }

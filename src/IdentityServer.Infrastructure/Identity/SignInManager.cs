@@ -17,5 +17,4 @@ public sealed class SignInManager(
 	IUserConfirmation<User> confirmation)
 	: SignInManager<User>(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
 {
-	
 }

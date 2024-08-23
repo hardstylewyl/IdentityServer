@@ -6,19 +6,25 @@ public class AccountManageViewModel
 {
 	//是否有手机号
 	public bool HasPhoneNumber => !string.IsNullOrWhiteSpace(PhoneNumber);
+
 	//是否有邮箱
 	public bool HasEmail => !string.IsNullOrWhiteSpace(Email);
+
 	//手机号
 	public string? PhoneNumber { get; set; }
+
 	//手机号验证
 	public bool PhoneNumberConfirmed { get; set; }
+
 	//邮箱
 	public string? Email { get; set; }
+
 	//邮箱验证
 	public bool EmailConfirmed { get; set; }
+
 	//是否有密码
 	public bool HasPassword { get; set; }
-	
+
 	//是否启用双因素
 	public bool TwoFactorEnabled { get; set; }
 

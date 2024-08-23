@@ -36,7 +36,7 @@ services.AddQuartz(o =>
 	//注册Quartz.NET服务并将其配置为在作业完成之前阻止关闭。
 	.AddQuartzHostedService(o => o.WaitForJobsToComplete = true);
 
-#endregion
+#endregion Quartz
 
 #region OpenIddict
 
@@ -79,10 +79,9 @@ services.AddOpenIddict()
 			.AllowAuthorizationCodeFlow()
 			.AllowRefreshTokenFlow()
 			.AllowHybridFlow();
-			// .AllowCustomFlow()
-			// .AllowImplicitFlow()
-			// .AllowNoneFlow()
-
+		// .AllowCustomFlow()
+		// .AllowImplicitFlow()
+		// .AllowNoneFlow()
 
 		//PKCE只在客户端无法保护自己的client_secret的时候使用
 		o.RequireProofKeyForCodeExchange();
@@ -103,8 +102,8 @@ services.AddOpenIddict()
 		o.SetAuthorizationEndpointUris("connect/authorize") //授权
 			.SetLogoutEndpointUris("connect/logout") //登出
 			.SetTokenEndpointUris("connect/token") //获取token
-			.SetUserinfoEndpointUris("connect/userinfo") //获取用户信息 
-			.SetRevocationEndpointUris("connect/revoke") //撤销token   
+			.SetUserinfoEndpointUris("connect/userinfo") //获取用户信息
+			.SetRevocationEndpointUris("connect/revoke") //撤销token
 			.SetIntrospectionEndpointUris("connect/introspect") //内省，验证令牌有效性
 			.SetVerificationEndpointUris("connect/verify") //验证签名有效性
 			.SetDeviceEndpointUris("connect/device");//设备授权
@@ -122,7 +121,7 @@ services.AddOpenIddict()
 		o.UseAspNetCore();
 	});
 
-#endregion
+#endregion OpenIddict
 
 #region Authentication And Authorization
 
@@ -151,7 +150,7 @@ services.AddAuthentication(o =>
 		o.ClaimActions.MapCustomJson("all", element => element.ToString());
 	});
 
-#endregion
+#endregion Authentication And Authorization
 
 #region Fake
 

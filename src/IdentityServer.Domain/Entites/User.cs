@@ -8,11 +8,11 @@ public class User : Entity<long>, IAggregateRoot
 
 	public string NormalizedUserName { get; set; } = null!;
 
-	public string? Email { get; set; } 
+	public string? Email { get; set; }
 
-	public string? NormalizedEmail { get; set; } 
+	public string? NormalizedEmail { get; set; }
 
-	public bool EmailConfirmed { get; set; } 
+	public bool EmailConfirmed { get; set; }
 
 	public string? PasswordHash { get; set; }
 
@@ -34,13 +34,13 @@ public class User : Entity<long>, IAggregateRoot
 
 	public IList<UserToken> Tokens { get; set; } = [];
 
-	public IList<UserClaim> Claims { get; set; }  = [];
+	public IList<UserClaim> Claims { get; set; } = [];
 
-	public IList<UserRole> UserRoles { get; set; }  = [];
+	public IList<UserRole> UserRoles { get; set; } = [];
 
-	public IList<UserLink> UserLinks { get; set; }  = [];
+	public IList<UserLink> UserLinks { get; set; } = [];
 
 	public IList<UserLoginHistory> UserLoginHistories { get; set; } = [];
 
-	public IList<PasswordHistory> PasswordHistories { get; set; }  = [];
+	public IList<PasswordHistory> PasswordHistories { get; set; } = [];
 }

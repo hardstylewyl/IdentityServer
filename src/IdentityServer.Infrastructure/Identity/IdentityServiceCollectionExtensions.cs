@@ -41,7 +41,6 @@ public static class IdentityServiceCollectionExtensions
 			o.Cookie.SameSite = SameSiteMode.Lax;
 			o.ExpireTimeSpan = TimeSpan.FromDays(3);
 		});
-		
 
 		return services;
 	}
