@@ -1,4 +1,15 @@
-﻿<div>
-	Add Phone Number
+﻿@model AddPhoneNumberViewModel
+<div class="p-4">
+	<h4>添加或者更换手机号码</h4>
+	<hr>
+	<form asp-controller="Manage" asp-action="AddPhoneNumber" method="post">
+		<div asp-validation-summary="All" class="text-danger"></div>
+		<div class="col-6">
+			<label asp-for="PhoneNumber"></label>
+			<input asp-for="PhoneNumber" class="form-control"/>
+		</div>
+		<div class="mt-2">
+			<button type="submit" class="btn btn-primary">发送验证码</button>
+		</div>
+	</form>
 </div>
-

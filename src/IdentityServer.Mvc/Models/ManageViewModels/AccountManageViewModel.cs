@@ -1,3 +1,5 @@
+using IdentityServer.Domain.Entites;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 
 namespace IdentityServer.Mvc.Models.ManageViewModels;
@@ -35,5 +37,6 @@ public class AccountManageViewModel
 	public string? AuthenticatorKey { get; set; }
 
 	//当前关联的第三方身份提供商
-	public IList<UserLoginInfo> UserLoginInfos { get; set; } = [];
+	public IList<UserLoginInfo> CurrentUserLogins { get; set; } = [];
+	
 }

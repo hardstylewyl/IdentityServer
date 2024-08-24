@@ -76,15 +76,22 @@
 						</a>
 					</li>
 					<li class="nav-item">
+						<a class="nav-link d-flex align-items-center" asp-controller="Manage" asp-action="ManageLogins">
+							<img src="~/images/icon_个人资料.svg" alt="">
+							<span class="ms-1">外部账号关联</span>
+						</a>
+					</li>
+					<li class="nav-item">
 						<a class="nav-link d-flex align-items-center" asp-controller="Manage" asp-action="ManageProfile">
 							<img src="~/images/icon_个人资料.svg" alt="">
 							<span class="ms-1">个人资料</span>
 						</a>
 					</li>
+
 					<li class="nav-item">
 						<a class="nav-link d-flex align-items-center" asp-controller="Manage" asp-action="Application">
 							<img src="~/images/icon_应用管理.svg" alt="">
-							<span class="ms-1">第三方应用</span>
+							<span class="ms-1">应用管理</span>
 						</a>
 					</li>
 					<li class="nav-item">
@@ -162,5 +169,76 @@
 		changeActiveNavItem(window.location.href)
 	})(jQuery)
 </script>
+<script>
+	//需要引入layui
+	//吐司
+	function showToast(msg) {
+		layer.msg(msg)
+	}
+
+	//成功提示框
+	function successAlert(msg, time = 2000) {
+		layer.alert(msg, {
+			icon: 1, time: time, offset: 't', closeBtn: 0, title: '成功', btn: [], anim: 2, shade: 0
+		})
+	}
+
+	//警告提示框
+	function waringAlert(msg, time = 2000) {
+		layer.alert(msg, {
+			icon: 3, time: time, offset: 't', closeBtn: 0, title: '成功', btn: [], anim: 2, shade: 0
+		})
+	}
+
+	//错误提示框
+	function errorAlert(msg, time = 2000) {
+		layer.alert(msg, {
+			icon: 5, time: time, offset: 't', closeBtn: 0, title: '错误信息', btn: [], anim: 2, shade: 0
+		})
+	}
+
+</script>
+@* 提醒 *@
+@if (AlertModel.TryGet(TempData, out var alertModel)&& alertModel != null)
+{
+	switch (alertModel.Type)
+	{
+		case AlertType.Toast:
+			<script>
+	showToast('@alertModel.Message');
+</script>
+			break;
+		case AlertType.Success:
+			<script>
+	successAlert('@alertModel.Message', @alertModel.Duration);
+</script>
+			break;
+		case AlertType.Warning:
+			<script>
+	waringAlert('@alertModel.Message', @alertModel.Duration);
+</script>
+			break;
+		case AlertType.Error:
+			<script>
+	errorAlert('@alertModel.Message', @alertModel.Duration);
+</script>
+			break;
+	}
+}
+
+@* 动作 *@
+@if (ActionModel.TryGet(TempData, out var actionModel)&& actionModel != null)
+{
+	switch (actionModel.Type)
+	{
+		case ActionType.Redirect:
+			<script>
+	setTimeout(function () {
+		window.location.replace('@actionModel.Url')
+	}, @actionModel.Delay)
+</script>
+			break;
+	}
+}
 </body>
 </html>

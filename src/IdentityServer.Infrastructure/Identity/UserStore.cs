@@ -30,7 +30,7 @@ public class UserStore :
 	}
 
 	public IQueryable<User> Users => _userRepository.GetQueryableSet();
-
+	public IUserRepository UserRepository => _userRepository;
 	public void Dispose()
 	{
 	}

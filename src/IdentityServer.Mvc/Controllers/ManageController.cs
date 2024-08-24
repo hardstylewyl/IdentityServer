@@ -1,10 +1,13 @@
+using System.Security.Claims;
 using IdentityServer.Domain.Entites;
 using IdentityServer.Domain.Notification;
 using IdentityServer.Infrastructure.Identity;
+using IdentityServer.Mvc.Models.Common;
 using IdentityServer.Mvc.Models.ManageViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace IdentityServer.Mvc.Controllers;
 
@@ -34,6 +37,8 @@ public sealed class ManageController(
 			: "";
 
 		var user = await GetCurrentUserAsync();
+
+		var userLogins = await userManager.GetLoginsAsync(user);
 		var model = new AccountManageViewModel
 		{
 			PhoneNumber = await userManager.GetPhoneNumberAsync(user),
@@ -44,7 +49,7 @@ public sealed class ManageController(
 			TwoFactorEnabled = await userManager.GetTwoFactorEnabledAsync(user),
 			BrowserRemembered = await signInManager.IsTwoFactorClientRememberedAsync(user),
 			AuthenticatorKey = await userManager.GetAuthenticatorKeyAsync(user),
-			UserLoginInfos = await userManager.GetLoginsAsync(user)
+			CurrentUserLogins = userLogins,
 		};
 		return View(model);
 	}
@@ -64,6 +69,7 @@ public sealed class ManageController(
 		{
 			await userManager.ResetAuthenticatorKeyAsync(user);
 		}
+
 		return RedirectToAction(nameof(AccountManage), "Manage");
 	}
 
@@ -79,6 +85,7 @@ public sealed class ManageController(
 			var codes = await userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 5);
 			return View("DisplayRecoveryCodes", new DisplayRecoveryCodesViewModel { Codes = codes });
 		}
+
 		return View("Error");
 	}
 
@@ -103,15 +110,15 @@ public sealed class ManageController(
 			return View("Error");
 		}
 
-		var userLogins = await userManager.GetLoginsAsync(user);
+		var userLinks = await userManager.GetUserLinksAsync(user);
 		var schemes = await signInManager.GetExternalAuthenticationSchemesAsync();
-		var otherLogins = schemes.Where(auth => userLogins.All(ul => auth.Name != ul.LoginProvider)).ToList();
+		var otherLogins = schemes.Where(auth => userLinks.All(ul => auth.Name != ul.LoginProvider)).ToList();
 		//当密码设置或者第三方关联绑定>1才允许解除一个三方身份
-		ViewData["ShowRemoveButton"] = user.PasswordHash != null || userLogins.Count > 1;
+		ViewData["ShowRemoveButton"] = user.PasswordHash != null || userLinks.Count > 1;
 
 		return View(new ManageLoginsViewModel
 		{
-			CurrentLogins = userLogins,
+			CurrentUserLinks = userLinks,
 			OtherLogins = otherLogins
 		});
 	}
@@ -157,7 +164,8 @@ public sealed class ManageController(
 	{
 		// 请求重定向到外部登录提供程序以链接当前用户的登录
 		var redirectUrl = Url.Action("LinkLoginCallback", "Manage");
-		var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, userManager.GetUserId(User));
+		var properties =
+			signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, userManager.GetUserId(User));
 		return Challenge(properties, provider);
 	}
 
@@ -177,8 +185,16 @@ public sealed class ManageController(
 		{
 			return RedirectToAction(nameof(ManageLogins), new { Message = ManageMessageId.Error });
 		}
-
-		var result = await userManager.AddLoginAsync(user, info);
+		
+		//获取三方用户信息
+		var externalProfile = ExternalProfileModel.CreateForExternalLoginInfo(info);
+		if (externalProfile == null)
+		{
+			return RedirectToAction(nameof(ManageLogins), new { Message = ManageMessageId.Error });
+		}
+		
+		//添加关联信息
+		var result = await userManager.AddUserLinkAsync(user, externalProfile.CreateUserLink());
 		var message = result.Succeeded ? ManageMessageId.AddLoginSuccess : ManageMessageId.Error;
 		return RedirectToAction(nameof(ManageLogins), new { Message = message });
 	}
@@ -199,6 +215,7 @@ public sealed class ManageController(
 			await userManager.SetTwoFactorEnabledAsync(user, true);
 			await signInManager.SignInAsync(user, isPersistent: false);
 		}
+		AddAlert(AlertType.Success,"启用成功");
 		return RedirectToAction(nameof(AccountManage), "Manage");
 	}
 
@@ -214,6 +231,7 @@ public sealed class ManageController(
 			await userManager.SetTwoFactorEnabledAsync(user, false);
 			await signInManager.SignInAsync(user, isPersistent: false);
 		}
+		AddAlert(AlertType.Success,"关闭成功");
 		return RedirectToAction(nameof(AccountManage), "Manage");
 	}
 
@@ -244,6 +262,8 @@ public sealed class ManageController(
 		var code = await userManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
 		//发送code到指定手机号
 		//await smsSender.SendAsync(model.PhoneNumber, "Your security code is: " + code);
+		Console.WriteLine($"-------------\n验证吗为：{code}\n-----------------");
+		AddAlert(AlertType.Success,"验证码发送成功");
 		return RedirectToAction(nameof(VerifyPhoneNumber), new { model.PhoneNumber });
 	}
 
@@ -281,7 +301,7 @@ public sealed class ManageController(
 			}
 		}
 
-		ModelState.AddModelError(string.Empty, "电话号码验证失败");
+		ModelState.AddModelError(string.Empty, "验证码输入有误");
 		return View(model);
 	}
 
@@ -301,6 +321,7 @@ public sealed class ManageController(
 				return RedirectToAction(nameof(AccountManage), new { Message = ManageMessageId.RemovePhoneSuccess });
 			}
 		}
+
 		return RedirectToAction(nameof(AccountManage), new { Message = ManageMessageId.Error });
 	}
 
@@ -480,5 +501,20 @@ public sealed class ManageController(
 		return userManager.GetUserAsync(HttpContext.User);
 	}
 
+	private void AddAlert(AlertType type,string message)
+	{
+		new AlertModel{Type = type,Message = message}
+			.WriteTempData(TempData);
+	}
+	private void AddDelayRedirect(string url,uint delay = 1500)
+	{
+		if (!Url.IsLocalUrl(url))
+		{
+			return;
+		}
+		
+		ActionModel.Redirect(url, delay)
+			.WriteTempData(TempData);
+	}
 	#endregion Helpers
 }

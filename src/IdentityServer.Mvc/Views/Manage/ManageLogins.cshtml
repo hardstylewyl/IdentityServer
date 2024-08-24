@@ -1,3 +1,74 @@
-﻿<div>
-	
+﻿@model ManageLoginsViewModel
+
+
+<div class="p-4">
+	<h4>第三方账户绑定</h4>
+	<div>以下是您已经绑定的第三方账户</div>
+	<table class="table table-bordered text-center align-middle">
+		<tr>
+			<td>第三方提供商</td>
+			<td>详情</td>
+			<td>绑定时间</td>
+			<td>操作</td>
+		</tr>
+		@foreach (var provider in Model.CurrentUserLinks)
+		{
+			<tr>
+				<td>@provider.LoginProvider</td>
+				<td>@provider.LoginName</td>
+				<td>@provider.LinkTimeOnUtc</td>
+				<td>
+					<button class="btn btn-outline-warning" data-bs-target="#un@(provider.LoginProvider)"
+					        data-bs-toggle="modal">
+						解除绑定
+					</button>
+					<!-- unBind Modal -->
+					<div class="modal fade " id="un@(provider.LoginProvider)" tabindex="-1"
+					     aria-labelledby="un@(provider.LoginProvider)Label" aria-hidden="true">
+						<div class="modal-dialog modal-dialog-centered">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h1 class="modal-title fs-5" id="un@(provider.LoginProvider)Label">解除绑定</h1>
+									<button type="button" class="btn-close" data-bs-dismiss="modal"
+									        aria-label="Close">
+									</button>
+								</div>
+								<div class="modal-body">
+									<span>您要解除与@(provider.LoginProvider)的绑定吗？解除后将不能在能用@(provider.LoginProvider)登录</span>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary"
+									        data-bs-dismiss="modal">
+										取消
+									</button>
+									<form method="post" asp-action="RemoveLogin">
+										<input name="LoginProvider" value="@provider.LoginProvider" type="hidden">
+										<input name="ProviderKey" value="@provider.ProviderKey" type="hidden">
+										<button type="submit" class="btn btn-danger">确定解除</button>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</td>
+			</tr>
+		}
+	</table>
+	@if (Model.OtherLogins.Count == 0)
+	{
+		<div>敬请期待更多第三方接入中心</div>
+	}
+	else
+	{
+		<ul class="nav nav-pills">
+			@foreach (var authScheme in Model.OtherLogins)
+			{
+				<li class="nav-item m-md-1">
+					<form method="post" asp-action="LinkLogin" asp-route-provider="@authScheme.Name">
+						<button type="submit" class="btn btn-success">@authScheme.Name</button>
+					</form>
+				</li>
+			}
+		</ul>
+	}
 </div>

@@ -1,3 +1,6 @@
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+
 namespace IdentityServer.Mvc.Models.Common;
 
 public enum AlertType
@@ -29,4 +32,20 @@ public sealed class AlertModel
 
 	public static AlertModel Error(string message, uint duration = 2000) =>
 		new() { Message = message, Type = AlertType.Error, Duration = duration };
+
+	public void WriteTempData(ITempDataDictionary tempData)
+	{
+		tempData[Key] = JsonSerializer.Serialize(this);
+	}
+
+	public static bool TryGet(ITempDataDictionary tempData,out AlertModel? alert)
+	{
+		var success = tempData.TryGetValue(Key, out object? value);
+
+		alert = success && value is string json
+			? alert = JsonSerializer.Deserialize<AlertModel>(json)
+			: alert = null;
+
+		return success;
+	}
 }

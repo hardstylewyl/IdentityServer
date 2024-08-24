@@ -2,6 +2,7 @@
 @{
 	var phoneLabel = Model.PhoneNumber == null ? "(未绑定手机)" : Model.PhoneNumberConfirmed ? "" : "(未验证)";
 	var emailLabel = Model.Email == null ? "(未绑定邮箱)" : Model.EmailConfirmed ? "" : "(未验证)";
+	var phoneButton = Model.HasPhoneNumber ? "更换号码" : "绑定手机";
 }
 
 <div class="p-4">
@@ -9,26 +10,71 @@
 	<hr>
 	@* 手机号 *@
 	<div>
-		<div>
-			<span>手机号@(phoneLabel)</span>
-			@* 手机未添加 *@
-			@if (!Model.HasPhoneNumber)
-			{
-				<a asp-controller="Manage" asp-action="AddPhoneNumber">绑定</a>
-			}
-		</div>
-		<input asp-for="PhoneNumber" type="text" disabled/>
-		<button class="btn btn-warning">更换号码</button>
+		<div>手机号@(phoneLabel)</div>
+		<form method="get" asp-controller="Manage" asp-action="AddPhoneNumber">
+			<input asp-for="PhoneNumber" type="text" disabled/>
+			<button class="btn btn-secondary">@phoneButton</button>
+		</form>
 	</div>
 	@* 邮箱 *@
-	<div>
+	<div class="mt-2">
 		<div>
 			<span>邮箱@(emailLabel)</span>
 			@* 邮箱未添加 *@
-			@if (!Model.HasEmail)
+			@if (!Model.EmailConfirmed)
 			{
-				<a asp-controller="Manage" asp-action="AddEmail">绑定</a>
+				<a asp-controller="Manage" asp-action="AddEmail">验证</a>
 			}
 		</div>
+		<input asp-for="Email" type="text" disabled/>
+		<button class="btn btn-secondary">更换邮箱</button>
+	</div>
+	@* 密码 *@
+	<div class="mt-2">
+		<div>
+			<span>密码</span>
+		</div>
+		<input value="********" type="password" disabled/>
+		<button class="btn btn-secondary">密码修改</button>
+	</div>
+	@* 双因素认证 *@
+	<div class="mt-2 col-4">
+		<div>双因素认证</div>
+		<table class="table table-bordered text-center align-middle">
+			<tr>
+				<td>状态</td>
+				<td>操作</td>
+			</tr>
+			<tr>
+				@if (Model.TwoFactorEnabled)
+				{
+					<td>
+						<span class="text-success">启用</span>
+					</td>
+					<td>
+						<form asp-controller="Manage" asp-action="DisableTwoFactorAuthentication">
+							<button type="submit" class="btn btn-link">关闭</button>
+						</form>
+					</td>
+				}
+				else
+				{
+					<td>
+						<span class="text-warning">关闭</span>
+					</td>
+					<td>
+						<form asp-controller="Manage" asp-action="EnableTwoFactorAuthentication">
+							<button class="btn btn-link">启动</button>
+						</form>
+					</td>
+				}
+			</tr>
+		</table>
+	</div>
+	@* 第三方账户关联 *@
+	<div class="mt-2">
+		<div>第三方账户关联</div>
+		<div>当前三方账户关联数量：@Model.CurrentUserLogins.Count</div>
+		<a asp-controller="Manage" asp-action="ManageLogins">去管理</a>
 	</div>
 </div>

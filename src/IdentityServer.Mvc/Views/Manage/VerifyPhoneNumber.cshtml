@@ -1,4 +1,16 @@
-﻿<div>
-	Verification code sent to 
+﻿@model VerifyPhoneNumberViewModel
+<div class="p-4">
+	<h4>验证手机号码</h4>
+	<hr>
+	<form asp-controller="Manage" asp-action="VerifyPhoneNumber" method="post">
+		<div asp-validation-summary="All" class="text-danger"></div>
+		<input asp-for="PhoneNumber" type="hidden"/>
+		<div class="col-6">
+			<label asp-for="Code"></label>
+			<input asp-for="Code" class="form-control" placeholder="请输入验证码"/>
+		</div>
+		<div class="mt-2">
+			<button type="submit" class="btn btn-primary">验证代码</button>
+		</div>
+	</form>
 </div>
-
