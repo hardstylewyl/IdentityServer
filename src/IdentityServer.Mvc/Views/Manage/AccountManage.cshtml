@@ -11,7 +11,7 @@
 	@* 手机号 *@
 	<div>
 		<div>手机号@(phoneLabel)</div>
-		<form method="get" asp-controller="Manage" asp-action="AddPhoneNumber">
+		<form method="get" asp-controller="Manage" asp-action="ChangePhoneNumber">
 			<input asp-for="PhoneNumber" type="text" disabled/>
 			<button class="btn btn-secondary">@phoneButton</button>
 		</form>
@@ -23,19 +23,24 @@
 			@* 邮箱未添加 *@
 			@if (!Model.EmailConfirmed)
 			{
-				<a asp-controller="Manage" asp-action="AddEmail">验证</a>
+				<a asp-controller="Manage" asp-action="ConfirmEmail" asp-route-email="@Model.Email">验证</a>
 			}
 		</div>
-		<input asp-for="Email" type="text" disabled/>
-		<button class="btn btn-secondary">更换邮箱</button>
+		<form method="get" asp-controller="Manage" asp-action="ChangeEmail">
+			<input asp-for="Email" type="text" disabled/>
+			<button class="btn btn-secondary">更换邮箱</button>
+		</form>
+
 	</div>
 	@* 密码 *@
 	<div class="mt-2">
 		<div>
 			<span>密码</span>
 		</div>
-		<input value="********" type="password" disabled/>
-		<button class="btn btn-secondary">密码修改</button>
+		<form method="get" asp-controller="Manage" asp-action="ChangePassword">
+			<input value="********" type="password" disabled/>
+			<button class="btn btn-secondary">密码修改</button>
+		</form>
 	</div>
 	@* 双因素认证 *@
 	<div class="mt-2 col-4">

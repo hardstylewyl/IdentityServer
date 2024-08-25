@@ -1,8 +1,8 @@
-﻿@model AddPhoneNumberViewModel
+﻿@model ChangePhoneNumberViewModel
 <div class="p-4">
 	<h4>添加或者更换手机号码</h4>
 	<hr>
-	<form asp-controller="Manage" asp-action="AddPhoneNumber" method="post">
+	<form asp-controller="Manage" asp-action="ChangePhoneNumber" method="post">
 		<div asp-validation-summary="All" class="text-danger"></div>
 		<div class="col-6">
 			<label asp-for="PhoneNumber"></label>

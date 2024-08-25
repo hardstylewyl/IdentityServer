@@ -1,4 +1,4 @@
-using System.Security.Claims;
+using IdentityServer.CrossCuttingConcerns.Utility;
 using IdentityServer.Domain.Entites;
 using IdentityServer.Domain.Notification;
 using IdentityServer.Infrastructure.Identity;
@@ -7,7 +7,6 @@ using IdentityServer.Mvc.Models.ManageViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace IdentityServer.Mvc.Controllers;
 
@@ -37,12 +36,11 @@ public sealed class ManageController(
 			: "";
 
 		var user = await GetCurrentUserAsync();
-
 		var userLogins = await userManager.GetLoginsAsync(user);
 		var model = new AccountManageViewModel
 		{
 			PhoneNumber = await userManager.GetPhoneNumberAsync(user),
-			PhoneNumberConfirmed = await userManager.IsEmailConfirmedAsync(user),
+			PhoneNumberConfirmed = await userManager.IsPhoneNumberConfirmedAsync(user),
 			Email = await userManager.GetEmailAsync(user),
 			EmailConfirmed = await userManager.IsEmailConfirmedAsync(user),
 			HasPassword = await userManager.HasPasswordAsync(user),
@@ -65,10 +63,7 @@ public sealed class ManageController(
 	public async Task<IActionResult> ResetAuthenticatorKey()
 	{
 		var user = await GetCurrentUserAsync();
-		if (user != null)
-		{
-			await userManager.ResetAuthenticatorKeyAsync(user);
-		}
+		await userManager.ResetAuthenticatorKeyAsync(user);
 
 		return RedirectToAction(nameof(AccountManage), "Manage");
 	}
@@ -80,18 +75,18 @@ public sealed class ManageController(
 	public async Task<IActionResult> GenerateRecoveryCode()
 	{
 		var user = await GetCurrentUserAsync();
-		if (user != null)
-		{
-			var codes = await userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 5);
-			return View("DisplayRecoveryCodes", new DisplayRecoveryCodesViewModel { Codes = codes });
-		}
 
-		return View("Error");
+		var codes = await userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 5);
+		if (codes == null)
+		{
+			
+		}
+		return View("DisplayRecoveryCodes", new DisplayRecoveryCodesViewModel { Codes = codes });
 	}
 
 	#endregion 鉴权器
 
-	#region 移除/关联 三方账户
+	#region 三方账户 移除/关联
 
 	//
 	//GET: /Manage/ManageLogins
@@ -105,10 +100,6 @@ public sealed class ManageController(
 			: "";
 
 		var user = await GetCurrentUserAsync();
-		if (user == null)
-		{
-			return View("Error");
-		}
 
 		var userLinks = await userManager.GetUserLinksAsync(user);
 		var schemes = await signInManager.GetExternalAuthenticationSchemesAsync();
@@ -131,10 +122,6 @@ public sealed class ManageController(
 	{
 		ManageMessageId? message = ManageMessageId.Error;
 		var user = await GetCurrentUserAsync();
-		if (user == null)
-		{
-			return RedirectToAction(nameof(ManageLogins), new { Message = message });
-		}
 
 		//当密码设置或者第三方关联绑定>1才允许解除一个三方身份
 		var logins = await userManager.GetLoginsAsync(user);
@@ -175,24 +162,20 @@ public sealed class ManageController(
 	public async Task<ActionResult> LinkLoginCallback()
 	{
 		var user = await GetCurrentUserAsync();
-		if (user == null)
-		{
-			return View("Error");
-		}
 
 		var info = await signInManager.GetExternalLoginInfoAsync(await userManager.GetUserIdAsync(user));
 		if (info == null)
 		{
 			return RedirectToAction(nameof(ManageLogins), new { Message = ManageMessageId.Error });
 		}
-		
+
 		//获取三方用户信息
 		var externalProfile = ExternalProfileModel.CreateForExternalLoginInfo(info);
 		if (externalProfile == null)
 		{
 			return RedirectToAction(nameof(ManageLogins), new { Message = ManageMessageId.Error });
 		}
-		
+
 		//添加关联信息
 		var result = await userManager.AddUserLinkAsync(user, externalProfile.CreateUserLink());
 		var message = result.Succeeded ? ManageMessageId.AddLoginSuccess : ManageMessageId.Error;
@@ -201,7 +184,7 @@ public sealed class ManageController(
 
 	#endregion 移除/关联 三方账户
 
-	#region 双因素（2FA）启停
+	#region 双因素（2FA）启动/停止
 
 	//
 	// POST: /Manage/EnableTwoFactorAuthentication
@@ -210,12 +193,11 @@ public sealed class ManageController(
 	public async Task<IActionResult> EnableTwoFactorAuthentication()
 	{
 		var user = await GetCurrentUserAsync();
-		if (user != null)
-		{
-			await userManager.SetTwoFactorEnabledAsync(user, true);
-			await signInManager.SignInAsync(user, isPersistent: false);
-		}
-		AddAlert(AlertType.Success,"启用成功");
+
+		await userManager.SetTwoFactorEnabledAsync(user, true);
+		await signInManager.SignInAsync(user, isPersistent: false);
+
+		AddAlert(AlertType.Success, "启用成功");
 		return RedirectToAction(nameof(AccountManage), "Manage");
 	}
 
@@ -226,57 +208,59 @@ public sealed class ManageController(
 	public async Task<IActionResult> DisableTwoFactorAuthentication()
 	{
 		var user = await GetCurrentUserAsync();
-		if (user != null)
-		{
-			await userManager.SetTwoFactorEnabledAsync(user, false);
-			await signInManager.SignInAsync(user, isPersistent: false);
-		}
-		AddAlert(AlertType.Success,"关闭成功");
+
+		await userManager.SetTwoFactorEnabledAsync(user, false);
+		await signInManager.SignInAsync(user, isPersistent: false);
+		
+		AddAlert(AlertType.Success, "关闭成功");
 		return RedirectToAction(nameof(AccountManage), "Manage");
 	}
 
 	#endregion 双因素（2FA）启停
 
-	#region 添加/更换/移除 手机号
+	#region 手机号 添加/更换/移除
 
 	//
-	// GET: /Manage/AddPhoneNumber
-	public IActionResult AddPhoneNumber()
+	// GET: /Manage/ChangePhoneNumber
+	public IActionResult ChangePhoneNumber()
 	{
 		return View();
 	}
 
 	//
-	// POST: /Manage/AddPhoneNumber
+	// POST: /Manage/ChangePhoneNumber
 	[HttpPost]
 	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> AddPhoneNumber(AddPhoneNumberViewModel model)
+	public async Task<IActionResult> ChangePhoneNumber(ChangePhoneNumberViewModel model)
 	{
 		if (!ModelState.IsValid)
 		{
 			return View(model);
 		}
 
+		var phoneNumber = model.PhoneNumber.Trim();
+		//验证格式
+		if (!Checker.PhoneNumber(phoneNumber))
+		{
+			return View("Error");
+		}
+
 		// 生成token并发送
 		var user = await GetCurrentUserAsync();
-		var code = await userManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
+		var code = await userManager.GenerateChangePhoneNumberTokenAsync(user, phoneNumber);
 		//发送code到指定手机号
 		//await smsSender.SendAsync(model.PhoneNumber, "Your security code is: " + code);
 		Console.WriteLine($"-------------\n验证吗为：{code}\n-----------------");
-		AddAlert(AlertType.Success,"验证码发送成功");
-		return RedirectToAction(nameof(VerifyPhoneNumber), new { model.PhoneNumber });
+		AddAlert(AlertType.Success, "验证码发送成功");
+		return RedirectToAction(nameof(VerifyPhoneNumber), new { phoneNumber });
 	}
 
 	//
 	// GET: /Manage/VerifyPhoneNumber
 	[HttpGet]
-	public async Task<IActionResult> VerifyPhoneNumber(string phoneNumber)
+	public IActionResult VerifyPhoneNumber(string phoneNumber)
 	{
-		var code = await userManager.GenerateChangePhoneNumberTokenAsync(await GetCurrentUserAsync(), phoneNumber);
-		//TODO:发送短信验证电话号码
-		//将验证码发送到新的手机号上
-		//smsSender.SendAsync()
-		return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
+		return View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
 	}
 
 	//
@@ -291,14 +275,11 @@ public sealed class ManageController(
 		}
 
 		var user = await GetCurrentUserAsync();
-		if (user != null)
+		var result = await userManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
+		if (result.Succeeded)
 		{
-			var result = await userManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
-			if (result.Succeeded)
-			{
-				await signInManager.SignInAsync(user, isPersistent: false);
-				return RedirectToAction(nameof(AccountManage), new { Message = ManageMessageId.AddPhoneSuccess });
-			}
+			await signInManager.SignInAsync(user, isPersistent: false);
+			return RedirectToAction(nameof(AccountManage), new { Message = ManageMessageId.AddPhoneSuccess });
 		}
 
 		ModelState.AddModelError(string.Empty, "验证码输入有误");
@@ -312,14 +293,12 @@ public sealed class ManageController(
 	public async Task<IActionResult> RemovePhoneNumber()
 	{
 		var user = await GetCurrentUserAsync();
-		if (user != null)
+
+		var result = await userManager.SetPhoneNumberAsync(user, null);
+		if (result.Succeeded)
 		{
-			var result = await userManager.SetPhoneNumberAsync(user, null);
-			if (result.Succeeded)
-			{
-				await signInManager.SignInAsync(user, isPersistent: false);
-				return RedirectToAction(nameof(AccountManage), new { Message = ManageMessageId.RemovePhoneSuccess });
-			}
+			await signInManager.SignInAsync(user, isPersistent: false);
+			return RedirectToAction(nameof(AccountManage), new { Message = ManageMessageId.RemovePhoneSuccess });
 		}
 
 		return RedirectToAction(nameof(AccountManage), new { Message = ManageMessageId.Error });
@@ -327,7 +306,97 @@ public sealed class ManageController(
 
 	#endregion 添加/更换/移除 手机号
 
-	#region 更新/添加 密码
+	#region 邮箱 更换/验证
+
+	//
+	// GET: /Manage/VerifyPhoneNumber
+	[HttpGet]
+	public IActionResult ChangeEmail()
+	{
+		return View();
+	}
+
+	//
+	// POST: /Manage/ChangeEmail
+	[HttpPost]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> ChangeEmail(ChangeEmailViewModel model)
+	{
+		if (!ModelState.IsValid)
+		{
+			return View(model);
+		}
+
+		var email = model.Email.Trim();
+		//验证格式
+		if (!Checker.Email(email))
+		{
+			return View("Error");
+		}
+
+		var user = await GetCurrentUserAsync();
+		var code = await userManager.GenerateChangeEmailTokenAsync(user, email);
+		//TODO:发送code到指定邮箱
+		//emailSender.SendAsync()
+		Console.WriteLine($"-------------\n验证吗为：{code}\n-----------------");
+		AddAlert(AlertType.Success, "验证码发送成功");
+		return RedirectToAction(nameof(VerifyEmail), new { email });
+	}
+
+	//
+	// GET: /Manage/ConfirmEmail
+	[HttpGet]
+	public async Task<IActionResult> ConfirmEmail(string email)
+	{
+		//验证格式
+		if (string.IsNullOrWhiteSpace(email))
+		{
+			return View("Error");
+		}
+
+		var user = await GetCurrentUserAsync();
+		var code = await userManager.GenerateChangeEmailTokenAsync(user, email);
+		//TODO:发送code到指定邮箱
+		//emailSender.SendAsync()
+		Console.WriteLine($"-------------\n验证吗为：{code}\n-----------------");
+		AddAlert(AlertType.Success, "验证码发送成功");
+		return RedirectToAction(nameof(VerifyEmail), new { email });
+	}
+
+	//
+	// GET: /Manage/VerifyEmail
+	[HttpGet]
+	public IActionResult VerifyEmail(string email)
+	{
+		return View(new VerifyEmailViewModel { Email = email });
+	}
+
+	//
+	// POST: /Manage/VerifyEmail
+	[HttpPost]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> VerifyEmail(VerifyEmailViewModel model)
+	{
+		if (!ModelState.IsValid)
+		{
+			return View(model);
+		}
+
+		var user = await GetCurrentUserAsync();
+		var result = await userManager.ChangeEmailAsync(user, model.Email, model.Code);
+		if (result.Succeeded)
+		{
+			await signInManager.SignInAsync(user, isPersistent: false);
+			return RedirectToAction(nameof(AccountManage), new { Message = ManageMessageId.AddEmailSuccess });
+		}
+
+		ModelState.AddModelError(string.Empty, "验证码输入有误");
+		return View(model);
+	}
+
+	#endregion
+
+	#region 密码 更新/添加
 
 	//
 	// GET: /Manage/ChangePassword
@@ -349,11 +418,7 @@ public sealed class ManageController(
 		}
 
 		var user = await GetCurrentUserAsync();
-		if (user == null)
-		{
-			return RedirectToAction(nameof(AccountManage), new { Message = ManageMessageId.Error });
-		}
-
+		
 		var result = await userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
 		if (!result.Succeeded)
 		{
@@ -385,11 +450,7 @@ public sealed class ManageController(
 		}
 
 		var user = await GetCurrentUserAsync();
-		if (user == null)
-		{
-			return RedirectToAction(nameof(AccountManage), new { Message = ManageMessageId.Error });
-		}
-
+		
 		var result = await userManager.AddPasswordAsync(user, model.NewPassword);
 		if (!result.Succeeded)
 		{
@@ -403,7 +464,7 @@ public sealed class ManageController(
 
 	#endregion 更新/添加 密码
 
-	#region 个人资料
+	#region 个人资料 查看/修改
 
 	//
 	// GET: /Manage/ManageProfile
@@ -411,11 +472,7 @@ public sealed class ManageController(
 	public async Task<IActionResult> ManageProfile()
 	{
 		var user = await GetCurrentUserAsync();
-		if (user == null)
-		{
-			return View("Error");
-		}
-
+		
 		//TODO:获取用户信息
 		// userManager.GetUserAsync()
 		var model = new ManageProfileViewModel();
@@ -453,18 +510,14 @@ public sealed class ManageController(
 
 	#endregion 第三方应用
 
-	#region 登录历史
+	#region 登录历史 查看
 
 	//
 	// GET: /Manage/LoginHistory
 	public async Task<IActionResult> LoginHistory()
 	{
 		var user = await GetCurrentUserAsync();
-		if (user == null)
-		{
-			return View("Error");
-		}
-
+		
 		//TODO：获取登录历史
 		//user.PasswordHistories
 		var model = new LoginHistoriesViewModel();
@@ -487,6 +540,7 @@ public sealed class ManageController(
 	public enum ManageMessageId
 	{
 		AddPhoneSuccess,
+		AddEmailSuccess,
 		AddLoginSuccess,
 		ChangePasswordSuccess,
 		SetTwoFactorSuccess,
@@ -496,25 +550,28 @@ public sealed class ManageController(
 		Error
 	}
 
-	private Task<User?> GetCurrentUserAsync()
+	private async Task<User> GetCurrentUserAsync()
 	{
-		return userManager.GetUserAsync(HttpContext.User);
+		return await userManager.GetUserAsync(HttpContext.User) ??
+		       throw new InvalidOperationException("Can't get user.");
 	}
 
-	private void AddAlert(AlertType type,string message)
+	private void AddAlert(AlertType type, string message)
 	{
-		new AlertModel{Type = type,Message = message}
+		new AlertModel { Type = type, Message = message }
 			.WriteTempData(TempData);
 	}
-	private void AddDelayRedirect(string url,uint delay = 1500)
+
+	private void AddDelayRedirect(string url, uint delay = 1500)
 	{
 		if (!Url.IsLocalUrl(url))
 		{
 			return;
 		}
-		
+
 		ActionModel.Redirect(url, delay)
 			.WriteTempData(TempData);
 	}
+
 	#endregion Helpers
 }

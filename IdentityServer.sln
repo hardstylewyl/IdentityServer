@@ -38,6 +38,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer.WebSpaApp", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer.Mvc", "src\IdentityServer.Mvc\IdentityServer.Mvc.csproj", "{F4A771F0-4773-4037-BCCC-602CF2183BAD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrossCuttingConcerns.Test", "test\CrossCuttingConcerns.Test\CrossCuttingConcerns.Test.csproj", "{FB0A37B0-BF70-4678-BB6B-42BB378CDF45}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +82,10 @@ Global
 		{F4A771F0-4773-4037-BCCC-602CF2183BAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4A771F0-4773-4037-BCCC-602CF2183BAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4A771F0-4773-4037-BCCC-602CF2183BAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB0A37B0-BF70-4678-BB6B-42BB378CDF45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB0A37B0-BF70-4678-BB6B-42BB378CDF45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB0A37B0-BF70-4678-BB6B-42BB378CDF45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB0A37B0-BF70-4678-BB6B-42BB378CDF45}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -98,6 +104,7 @@ Global
 		{395BA3EF-66CE-4FE0-9504-ED20781C1749} = {B61402DD-CE9E-462B-B775-141630A7841B}
 		{026868A7-EB45-4EB5-B622-229A3DDA7DC3} = {A59A9F39-FD21-4F0A-B395-6C5745C27A11}
 		{F4A771F0-4773-4037-BCCC-602CF2183BAD} = {A59A9F39-FD21-4F0A-B395-6C5745C27A11}
+		{FB0A37B0-BF70-4678-BB6B-42BB378CDF45} = {B61402DD-CE9E-462B-B775-141630A7841B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CAF580A1-B75B-44BF-BEA4-F47C71F48209}

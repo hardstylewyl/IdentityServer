@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IdentityServer.Mvc.Models.ManageViewModels;
 
-public class AddPhoneNumberViewModel
+public class ChangePhoneNumberViewModel
 {
 	[Required]
 	[Phone]

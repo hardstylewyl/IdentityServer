@@ -285,10 +285,12 @@ public sealed class AccountController(
 		var message = "Your security code is: " + code;
 		if (model.SelectedProvider == "Email")
 		{
+			Console.WriteLine("------------------\n"+message+"\n------------------");
 			//await emailSender.SendEmailAsync(await userManager.GetEmailAsync(user), "Security Code", message);
 		}
 		else if (model.SelectedProvider == "Phone")
 		{
+			Console.WriteLine("------------------\n"+message+"\n------------------");
 			//await smsSender.SendSmsAsync(await userManager.GetPhoneNumberAsync(user), message);
 		}
 

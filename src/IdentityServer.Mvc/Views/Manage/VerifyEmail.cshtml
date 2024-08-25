@@ -1,10 +1,10 @@
-﻿@model VerifyPhoneNumberViewModel
+﻿@model VerifyEmailViewModel
 <div class="p-4">
-	<h4>验证手机代码</h4>
+	<h4>验证邮箱代码</h4>
 	<hr>
-	<form asp-controller="Manage" asp-action="VerifyPhoneNumber" method="post">
+	<form asp-controller="Manage" asp-action="VerifyEmail" method="post">
 		<div asp-validation-summary="All" class="text-danger"></div>
-		<input asp-for="PhoneNumber" type="hidden"/>
+		<input asp-for="Email" type="hidden"/>
 		<div class="col-6">
 			<label asp-for="Code"></label>
 			<input asp-for="Code" class="form-control" placeholder="请输入验证码"/>

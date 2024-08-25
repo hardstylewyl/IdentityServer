@@ -7,6 +7,7 @@
 		      method="post">
 			<h2>您的账户启用了2FA认证！</h2>
 			<input asp-for="RememberMe" type="hidden"/>
+			<input asp-for="ReturnUrl" type="hidden"/>
 			<div class="row">
 				<div class="col-md-8">
 					请选择2FA认证提供者:
