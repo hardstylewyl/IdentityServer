@@ -39,14 +39,26 @@ public sealed class SignInManager(
 		bool loginSuccess = true,
 		CancellationToken cancellationToken = default)
 	{
-		user =  await userRepository.Get(new UserQueryOptions{IncludeUserLoginHistories = true})
+		user = await userRepository.Get(new UserQueryOptions{IncludeUserLoginHistories = true})
 			.FirstAsync(x=>x.Id==user.Id, cancellationToken);
 		
 		//获取ip信息和UserAgent信息
 		var ip = Context.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
 		var ua = Context.Request.Headers.UserAgent.ToString();
-		var ipInfo = await ipInfoService.GetIpInfoAsync(ip,cancellationToken);
 		
+		//如果最近一次登录记录在1天并且ip相同，则不记录
+		if (user.UserLoginHistories.Count > 0)
+		{
+			var lastLoginHistory = user.UserLoginHistories.MaxBy(x=>x.LoginTimeOnUtc)!;
+			//如果最近一次登录记录在1天，则不记录
+			if (DateTimeOffset.UtcNow - lastLoginHistory.LoginTimeOnUtc < TimeSpan.FromDays(1) 
+			    && lastLoginHistory.IpInfo.Ip.Equals(ip))
+			{
+				return IdentityResult.Success;
+			}
+		}
+		
+		var ipInfo = await ipInfoService.GetIpInfoAsync(ip,cancellationToken);
 		var userLoginHistory = new UserLoginHistory()
 		{
 			UserId = user.Id,
