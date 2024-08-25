@@ -22,7 +22,8 @@ services.AddDateTimeProvider();
 services.AddPersistence("Server=127.0.0.1;Port=5432;Database=identityserver;Uid=postgres;Pwd=wyl123567;",
 	Assembly.GetExecutingAssembly().GetName().Name!);
 services.AddIdentityServerLocalization();
-services.AddIdentity();
+services.AddIdentity()
+	.AddIP2RegionIpInfoService("./ip2region.xdb");
 
 #region Quartz
 

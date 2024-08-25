@@ -1,4 +1,5 @@
 using IdentityServer.Domain.Entites;
+using IdentityServer.Domain.Identity;
 using IdentityServer.Domain.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +45,8 @@ public sealed class UserManager(
 		user.UserLinks.Add(userLink);
 		return await UpdateUserAsync(user).ConfigureAwait(false);
 	}
+
+	
 	
 	private IQueryable<User> GetUserLinkQuery()
 	{

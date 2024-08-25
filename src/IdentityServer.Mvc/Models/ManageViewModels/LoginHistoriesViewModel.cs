@@ -1,5 +1,8 @@
+using IdentityServer.Domain.Entites;
+
 namespace IdentityServer.Mvc.Models.ManageViewModels;
 
-public class LoginHistoriesViewModel
+public sealed class LoginHistoriesViewModel
 {
+	public IList<UserLoginHistory> LoginHistories { get; set; } = [];
 }

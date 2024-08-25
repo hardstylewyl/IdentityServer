@@ -2,6 +2,8 @@ using System.Security.Claims;
 using IdentityServer.Domain.Entites;
 using IdentityServer.Domain.Notification;
 using IdentityServer.Infrastructure.Identity;
+using IdentityServer.Mvc.ConfigurationOptions;
+using IdentityServer.Mvc.ConfigurationOptions.ExternalLogin;
 using IdentityServer.Mvc.Models.AccountViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -20,7 +22,7 @@ public sealed class AccountController(
 	ILogger<AccountController> logger)
 	: Controller
 {
-	#region 登录
+	#region 账号密码登录
 
 	//
 	// GET: /Account/Login
@@ -29,20 +31,6 @@ public sealed class AccountController(
 	public IActionResult Login(string returnUrl = "/")
 	{
 		ViewData["ReturnUrl"] = returnUrl;
-		// return View("ExternalLoginFailure");
-		// return View("ExternalLoginConfirmation");
-		// return View("ResetPassword");
-		// return View("ResetPasswordConfirmation");
-		// return View("SendCode", new SendCodeViewModel()
-		// {
-		// 	Providers = new List<SelectListItem>()
-		// 	{
-		// 			new("Phone","Phone") {}
-		// 	}
-		// });
-		// return View("UseRecoveryCode");
-		// return View("VerifyAuthenticatorCode");
-		// return View("VerifyCode");
 		return View();
 	}
 
@@ -59,16 +47,16 @@ public sealed class AccountController(
 			return View(model);
 		}
 
+		var user = await userManager.FindByNameAsync(model.Username);
+
 		// 这不将登录失败计入帐户锁定
 		// 要使密码失败触发帐户锁定，请设置 lockoutOnFailure: true
 		var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe,
 			lockoutOnFailure: true);
-
-		var user = await userManager.FindByNameAsync(model.Username);
-
 		if (result.Succeeded)
 		{
-			//TODO:记录登录成功
+			//记录登录成功 清除失败次数
+			await signInManager.AddLoginHistoryAsync(user!, LoginMethods.UsernamePassword);
 			await userManager.ResetAccessFailedCountAsync(user!);
 			return RedirectToLocal(returnUrl);
 		}
@@ -80,13 +68,14 @@ public sealed class AccountController(
 
 		if (result.IsLockedOut)
 		{
+			await signInManager.AddLoginHistoryAsync(user!, LoginMethods.UsernamePassword, loginSuccess: false);
 			return View("Lockout");
 		}
 
 		//当用户存在并且登录失败记录失败日志
 		if (user != null)
 		{
-			//TODO:记录登录失败
+			await signInManager.AddLoginHistoryAsync(user!, LoginMethods.UsernamePassword, loginSuccess: false);
 		}
 
 		ModelState.AddModelError(string.Empty, "登录失败，账户或者密码错误");
@@ -128,16 +117,18 @@ public sealed class AccountController(
 			return RedirectToAction("Login");
 		}
 
+		var user = await userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+
 		// 如果用户已经登录，则使用此外部登录提供程序登录用户。
-		var result =
-			await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
+		var result = await signInManager
+			.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
 		if (result.Succeeded)
 		{
 			// 如果登录成功则更新所有身份验证令牌
 			await signInManager.UpdateExternalAuthenticationTokensAsync(info);
 
-			var user = await userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-			//TODO:记录登录成功日志
+			//记录登录日志 清除失败次数
+			await signInManager.AddLoginHistoryAsync(user!, LoginMethods.ExternalLogin, info.LoginProvider);
 			await userManager.ResetAccessFailedCountAsync(user!);
 			return RedirectToLocal(returnUrl);
 		}
@@ -149,6 +140,9 @@ public sealed class AccountController(
 
 		if (result.IsLockedOut)
 		{
+			//记录登录失败
+			await signInManager.AddLoginHistoryAsync(user!, LoginMethods.ExternalLogin, info.LoginProvider,
+				loginSuccess: false);
 			return View("Lockout");
 		}
 
@@ -216,9 +210,7 @@ public sealed class AccountController(
 		}
 
 		await signInManager.SignInAsync(user, isPersistent: false);
-
-		//TODO:记录登录成功
-
+		await signInManager.AddLoginHistoryAsync(user, LoginMethods.ExternalLogin, info.LoginProvider);
 		//同时更新所有身份验证令牌
 		await signInManager.UpdateExternalAuthenticationTokensAsync(info);
 
@@ -247,7 +239,7 @@ public sealed class AccountController(
 			.ToList();
 
 		return View(new SendCodeViewModel
-		{ Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
+			{ Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
 	}
 
 	//
@@ -285,12 +277,12 @@ public sealed class AccountController(
 		var message = "Your security code is: " + code;
 		if (model.SelectedProvider == "Email")
 		{
-			Console.WriteLine("------------------\n"+message+"\n------------------");
+			Console.WriteLine("------------------\n" + message + "\n------------------");
 			//await emailSender.SendEmailAsync(await userManager.GetEmailAsync(user), "Security Code", message);
 		}
 		else if (model.SelectedProvider == "Phone")
 		{
-			Console.WriteLine("------------------\n"+message+"\n------------------");
+			Console.WriteLine("------------------\n" + message + "\n------------------");
 			//await smsSender.SendSmsAsync(await userManager.GetPhoneNumberAsync(user), message);
 		}
 
@@ -329,22 +321,23 @@ public sealed class AccountController(
 		// 以下代码可防止针对双因素(2FA)代码的暴力攻击。
 		// 如果用户在指定时间内输入错误代码，则用户帐户将被删除
 		// 将被锁定指定的时间。
-		var result =
-			await signInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe,
-				model.RememberBrowser);
+		var result = await signInManager
+			.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe, model.RememberBrowser);
+		var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
 		if (result.Succeeded)
 		{
-			var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
-			//TODO:记录登录成功
+			await signInManager.AddLoginHistoryAsync(user!, LoginMethods.TwoFactor);
 			await userManager.ResetAccessFailedCountAsync(user!);
 			return RedirectToLocal(model.ReturnUrl);
 		}
 
 		if (result.IsLockedOut)
 		{
+			await signInManager.AddLoginHistoryAsync(user!, LoginMethods.TwoFactor, loginSuccess: false);
 			return View("Lockout");
 		}
 
+		await signInManager.AddLoginHistoryAsync(user!, LoginMethods.TwoFactor, loginSuccess: false);
 		ModelState.AddModelError(string.Empty, "验证码错误");
 		return View(model);
 	}
@@ -413,7 +406,7 @@ public sealed class AccountController(
 		//    "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>");
 
 		await signInManager.SignInAsync(user, isPersistent: false);
-		//TODO:记录登录成功日志
+		await signInManager.AddLoginHistoryAsync(user, LoginMethods.UsernamePassword);
 		return RedirectToLocal(returnUrl);
 	}
 

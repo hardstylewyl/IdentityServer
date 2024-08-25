@@ -526,12 +526,8 @@ public sealed class ManageController(
 	public async Task<IActionResult> LoginHistory()
 	{
 		var user = await GetCurrentUserAsync();
-		
-		//TODO：获取登录历史
-		//user.PasswordHistories
-		var model = new LoginHistoriesViewModel();
-
-		return View(model);
+		var loginHistories = await signInManager.GetLoginHistoriesAsync(user);
+		return View(new LoginHistoriesViewModel(){ LoginHistories = loginHistories });
 	}
 
 	#endregion 登录历史

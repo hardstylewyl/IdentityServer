@@ -1,4 +1,38 @@
-﻿<div>
-	Login History
+﻿@model LoginHistoriesViewModel
+<div class="p-4">
+	<h3>登录历史</h3>
+	<hr>
+	<div>
+		@foreach (var h in Model.LoginHistories)
+		{
+			<div class="mb-5">
+				<div >
+					IP详情：
+					<span style="font-size: 16px;"> @h.IpInfo</span>
+				</div>
+				<div >
+					登录方式：
+					<span style="font-size: 14px;"> @(h.LoginMethod)（@h.LoginProvider）</span>
+				</div>
+				<div s>
+					登录时间：
+					<span tyle="font-size: 14px;">@h.LoginTimeOnUtc</span>
+				</div>
+				<div>
+					登录结果：
+					@if (h.LoginSuccess)
+					{
+						<span class="text-success">@h.LoginSuccess</span>
+					}else
+					{
+						<span class="text-danger">@h.LoginSuccess</span>
+					}
+				</div>
+				<div>
+					UA标识：
+					<span class="text-black-50">@h.UserAgent</span>
+				</div>
+			</div>
+		}
+	</div>
 </div>
-

@@ -48,4 +48,9 @@ public class IpAddressDetails : ValueObject
 		yield return ZipCode;
 		yield return Carrier;
 	}
+
+	public override string ToString()
+	{
+		return $"{Ip} {City} {State} {Country} {Street} {ZipCode} {Carrier}".Trim();
+	}
 }

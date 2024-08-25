@@ -9,7 +9,7 @@ public abstract class Entity<TKey> : IHasKey<TKey>, ITrackable
 	[Timestamp]
 	public uint RowVersion { get; set; }
 
-	public DateTimeOffset CreatedDateTime { get; set; }
+	public DateTimeOffset CreatedDateTime { get; set; } = DateTimeOffset.UtcNow;
 
 	public DateTimeOffset? UpdatedDateTime { get; set; }
 }
