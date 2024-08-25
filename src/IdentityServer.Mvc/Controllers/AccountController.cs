@@ -5,6 +5,7 @@ using IdentityServer.Infrastructure.Identity;
 using IdentityServer.Mvc.ConfigurationOptions;
 using IdentityServer.Mvc.ConfigurationOptions.ExternalLogin;
 using IdentityServer.Mvc.Models.AccountViewModels;
+using IdentityServer.Mvc.Models.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -182,6 +183,13 @@ public sealed class AccountController(
 			return View(model);
 		}
 
+		//从外部登录提供者获取用户信息，用于抽取Claims
+		var externalProfile = ExternalProfileModel.CreateForExternalLoginInfo(info);
+		if (externalProfile == null)
+		{
+			return View("ExternalLoginFailure");
+		}
+
 		//创建账户，使用邮箱作为用户名
 		user = new User { UserName = model.Email, Email = model.Email };
 		var result = await userManager.CreateAsync(user);
@@ -191,15 +199,15 @@ public sealed class AccountController(
 			return View(model);
 		}
 
-		//TODO：添加声明信息
-		//result = await userManager.AddClaimsAsync(user, []);
-		//if (!result.Succeeded)
-		//{
-		//	//添加声明信息失败，删除用户
-		//	await userManager.DeleteAsync(user);
-		//	AddErrors(result);
-		//	return View(model);
-		//}
+		//添加声明信息，失败则删除用户
+		result = await userManager.AddClaimsAsync(user, externalProfile.ExtractClaims());
+		if (!result.Succeeded)
+		{
+			//添加声明信息失败，删除用户
+			await userManager.DeleteAsync(user);
+			AddErrors(result);
+			return View(model);
+		}
 
 		//保存登录信息
 		result = await userManager.AddLoginAsync(user, info);
