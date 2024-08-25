@@ -471,12 +471,8 @@ public sealed class ManageController(
 	[HttpGet]
 	public async Task<IActionResult> ManageProfile()
 	{
-		var user = await GetCurrentUserAsync();
-		
-		//TODO:获取用户信息
-		// userManager.GetUserAsync()
-		var model = new ManageProfileViewModel();
-
+		var claims = await userManager.GetClaimsAsync(await GetCurrentUserAsync());
+		var model = ManageProfileViewModel.CreateForUserClaims(claims);
 		return View(model);
 	}
 
@@ -488,12 +484,25 @@ public sealed class ManageController(
 	{
 		if (!ModelState.IsValid)
 		{
-			return View();
+			return View(model);
 		}
 
-		//TODO:修改用户信息
-		// userManager.ChangeProfileAsync(model)
-		return View();
+		var user =  await GetCurrentUserAsync();
+		var oldClaims = await userManager.GetClaimsAsync(user);
+		//修改用户信息 更新UserClaims
+		var newClaims =  model.ExtractClaims();
+		foreach (var claim in newClaims)
+		{
+			//找出需要修改的claim 类型相同value不同
+			var diffClaim = oldClaims.FirstOrDefault(x => x.Type == claim.Type && x.Value != claim.Value);
+			if (diffClaim != null)
+			{
+				await userManager.ReplaceClaimAsync(user, diffClaim, claim);
+			}
+		}
+		
+		AddAlert(AlertType.Success, "更新用户信息成功");;
+		return View(model);
 	}
 
 	#endregion 个人资料

@@ -1,4 +1,51 @@
-﻿<div>
-	Manage Profile
+﻿@model ManageProfileViewModel
+@{
+	var genders = new List<SelectListItem>()
+	{
+		new("男", "男"),
+		new("女", "女"),
+		new("保密", "保密")
+	};
+}
+<div class="p-4">
+	<h3>个人信息</h3>
+	<hr>
+	<form asp-controller="Manage" asp-action="ManageProfile" method="post">
+		<div asp-validation-summary="All" class="text-danger"></div>
+		<div class="mt-3">
+			<label>姓名</label>
+			<input type="text" asp-for="Name" class="form-control">
+		</div>
+		<div class="mt-3">
+			<label >昵称</label>
+			<input type="text" asp-for="Nickname" class="form-control">
+		</div>
+		<div class="mt-3">
+			<label>生日</label>
+			<input type="text" asp-for="Birthdate" class="form-control dateTime">
+		</div>
+		<div class="mt-3">
+			<label>性别</label>
+			<select asp-for="Gender" asp-items="genders" class="form-control"></select>
+		</div>
+		<div class="mt-3">
+			<label>地址</label>
+			<input type="text" asp-for="Address" class="form-control">
+		</div>
+		<div class="mt-2">
+			<button type="submit" class="btn btn-primary">确认修改</button>
+		</div>
+	</form>
 </div>
 
+@section Scripts
+{
+	<script>
+		"use strict";
+		
+            layui.laydate.render({
+                elem: '.dateTime',
+                 type: 'datetime'
+            })
+	</script>
+}

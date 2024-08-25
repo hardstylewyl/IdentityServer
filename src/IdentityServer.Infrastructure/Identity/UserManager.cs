@@ -44,8 +44,7 @@ public sealed class UserManager(
 		user.UserLinks.Add(userLink);
 		return await UpdateUserAsync(user).ConfigureAwait(false);
 	}
-
-
+	
 	private IQueryable<User> GetUserLinkQuery()
 	{
 		return userRepository.Get(new UserQueryOptions { IncludeUserLinks = true });
