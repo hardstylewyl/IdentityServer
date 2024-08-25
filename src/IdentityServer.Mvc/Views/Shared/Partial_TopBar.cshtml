@@ -36,8 +36,9 @@
 							<img src="@pictrue" class="user-img rounded-circle" alt="">
 						</a>
 						<div class="dropdown-menu dropdown-menu-end">
-							<a class="dropdown-item" href="#">个人信息</a>
-							<a class="dropdown-item" href="#"> 退出</a>
+							<a class="dropdown-item" asp-controller="Manage" asp-action="ManageProfile">个人信息</a>
+							<a class="dropdown-item" asp-controller="Manage" asp-action="AccountManage">设置</a>
+							<a class="dropdown-item" asp-controller="Authorization" asp-action="Logout">退出</a>
 						</div>
 					</li>
 				}
