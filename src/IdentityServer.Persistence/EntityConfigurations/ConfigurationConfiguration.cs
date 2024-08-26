@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace IdentityServer.Persistence.EntityConfigurations;
 
-public class ConfigurationEntryConfiguration : IEntityTypeConfiguration<ConfigurationEntry>
+public class ConfigurationConfiguration : IEntityTypeConfiguration<ConfigurationEntry>
 {
 	public void Configure(EntityTypeBuilder<ConfigurationEntry> builder)
 	{

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace IdentityServer.Persistence.EntityConfigurations;
 
-public class AuditLogEntryConfiguration : IEntityTypeConfiguration<AuditLogEntry>
+public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLogEntry>
 {
 	public void Configure(EntityTypeBuilder<AuditLogEntry> builder)
 	{
