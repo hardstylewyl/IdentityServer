@@ -79,7 +79,7 @@ public sealed class ManageController(
 		var codes = await userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 5);
 		if (codes == null)
 		{
-			
+			return  View("Error");
 		}
 		return View("DisplayRecoveryCodes", new DisplayRecoveryCodesViewModel { Codes = codes });
 	}
@@ -136,7 +136,6 @@ public sealed class ManageController(
 		if (result.Succeeded)
 		{
 			await signInManager.SignInAsync(user, isPersistent: false);
-			//TODO:记录成功登录日志
 			message = ManageMessageId.RemoveLoginSuccess;
 		}
 

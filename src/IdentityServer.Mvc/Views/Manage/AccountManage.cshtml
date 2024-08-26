@@ -10,7 +10,7 @@
 	<hr>
 	@* 手机号 *@
 	<div>
-		<div>手机号@(phoneLabel)</div>
+		<dt>手机号@(phoneLabel)</dt>
 		<form method="get" asp-controller="Manage" asp-action="ChangePhoneNumber">
 			<input asp-for="PhoneNumber" type="text" disabled/>
 			<button class="btn btn-secondary">@phoneButton</button>
@@ -19,7 +19,7 @@
 	@* 邮箱 *@
 	<div class="mt-2">
 		<div>
-			<span>邮箱@(emailLabel)</span>
+			<dt>邮箱@(emailLabel)</dt>
 			@* 邮箱未添加 *@
 			@if (!Model.EmailConfirmed)
 			{
@@ -35,7 +35,7 @@
 	@* 密码 *@
 	<div class="mt-2">
 		<div>
-			<span>密码</span>
+			<dt>密码</dt>
 		</div>
 		<form method="get" asp-controller="Manage" asp-action="ChangePassword">
 			<input value="********" type="password" disabled/>
@@ -44,7 +44,7 @@
 	</div>
 	@* 双因素认证 *@
 	<div class="mt-2 col-4">
-		<div>双因素认证</div>
+		<dt>双因素认证</dt>
 		<table class="table table-bordered text-center align-middle">
 			<tr>
 				<td>状态</td>
@@ -75,6 +75,25 @@
 				}
 			</tr>
 		</table>
+	</div>
+	@* 鉴权器 *@
+	<div class="mt-2">
+		<dt>鉴权 App:</dt>
+		<dd>
+			@if (Model.AuthenticatorKey == null)
+			{
+			<form asp-controller="Manage" asp-action="ResetAuthenticatorKey" method="post" class="form-horizontal" role="form">
+				AuthenticatorKey: [<button type="submit" class="btn btn-link">生成</button>]
+			</form>
+			}
+			else
+			{
+			<text>AuthenticatorKey: @Model.AuthenticatorKey</text>
+			<form asp-controller="Manage" asp-action="GenerateRecoveryCode" method="post" class="form-horizontal" role="form">
+				RecoveryCode: [<button type="submit" class="btn btn-link">生成新的恢复代码</button>]
+			</form>
+			}
+		</dd>
 	</div>
 	@* 第三方账户关联 *@
 	<div class="mt-2">

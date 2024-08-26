@@ -352,6 +352,112 @@ public sealed class AccountController(
 
 	#endregion 双因素登录（2FA）相关
 
+	#region 鉴权器和恢复代码登录
+
+	//
+	// GET: /Account/VerifyAuthenticatorCode
+	[HttpGet]
+	[AllowAnonymous]
+	public async Task<IActionResult> VerifyAuthenticatorCode(bool rememberMe, string returnUrl = "/")
+	{
+		//要求用户已经通过用户名/密码或外部登录登录
+		var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
+		if (user == null)
+		{
+			return View("Error");
+		}
+
+		return View(new VerifyAuthenticatorCodeViewModel { ReturnUrl = returnUrl, RememberMe = rememberMe });
+	}
+
+	//
+	// POST: /Account/VerifyAuthenticatorCode
+	[HttpPost]
+	[AllowAnonymous]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> VerifyAuthenticatorCode(VerifyAuthenticatorCodeViewModel model)
+	{
+		if (!ModelState.IsValid)
+		{
+			return View(model);
+		}
+
+		var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
+		if (user == null)
+		{
+			return View("Error");
+		}
+
+		// 以下代码可防止针对两个因素代码的暴力攻击。
+		// 如果用户在指定时间内输入错误代码，则用户帐户将被删除
+		// 将被锁定指定的时间。
+		var result = await signInManager
+			.TwoFactorAuthenticatorSignInAsync(model.Code, model.RememberMe, model.RememberBrowser);
+		if (result.Succeeded)
+		{
+			await signInManager.AddLoginHistoryAsync(user, LoginMethods.TwoFactor);
+			return RedirectToLocal(model.ReturnUrl);
+		}
+
+		if (result.IsLockedOut)
+		{
+			await signInManager.AddLoginHistoryAsync(user, LoginMethods.TwoFactor, loginSuccess: false);
+			return View("Lockout");
+		}
+
+		await signInManager.AddLoginHistoryAsync(user, LoginMethods.TwoFactor, loginSuccess: false);
+		ModelState.AddModelError(string.Empty, "验证码错误");
+		return View(model);
+	}
+
+	//
+	// GET: /Account/UseRecoveryCode
+	[HttpGet]
+	[AllowAnonymous]
+	public async Task<IActionResult> UseRecoveryCode(string returnUrl = "/")
+	{
+		// Require that the user has already logged in via username/password or external login
+		var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
+		if (user == null)
+		{
+			return View("Error");
+		}
+
+		return View(new UseRecoveryCodeViewModel { ReturnUrl = returnUrl });
+	}
+
+	//
+	// POST: /Account/UseRecoveryCode
+	[HttpPost]
+	[AllowAnonymous]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> UseRecoveryCode(UseRecoveryCodeViewModel model)
+	{
+		if (!ModelState.IsValid)
+		{
+			return View(model);
+		}
+
+		var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
+		if (user == null)
+		{
+			return View("Error");
+		}
+
+		var result = await signInManager.TwoFactorRecoveryCodeSignInAsync(model.Code);
+		if (result.Succeeded)
+		{
+			await signInManager.AddLoginHistoryAsync(user, LoginMethods.TwoFactor);
+			return RedirectToLocal(model.ReturnUrl);
+		}
+
+		await signInManager.AddLoginHistoryAsync(user, LoginMethods.TwoFactor, loginSuccess: false);
+		ModelState.AddModelError(string.Empty, "验证码错误");
+		return View(model);
+	}
+
+	#endregion 验证器登录方案
+
 	#region 注册
 
 	//
@@ -429,7 +535,7 @@ public sealed class AccountController(
 	public async Task<IActionResult> LogOff()
 	{
 		await signInManager.SignOutAsync();
-		return RedirectToAction(nameof(HomeController.Index), "Home");
+		return RedirectToAction(nameof(Index), "Home");
 	}
 
 	#endregion 登出
@@ -561,97 +667,6 @@ public sealed class AccountController(
 	}
 
 	#endregion 重置密码
-
-	#region 验证器登录方案
-
-	//
-	// GET: /Account/VerifyAuthenticatorCode
-	[HttpGet]
-	[AllowAnonymous]
-	public async Task<IActionResult> VerifyAuthenticatorCode(bool rememberMe, string returnUrl = "/")
-	{
-		//要求用户已经通过用户名/密码或外部登录登录
-		var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
-		if (user == null)
-		{
-			return View("Error");
-		}
-
-		return View(new VerifyAuthenticatorCodeViewModel { ReturnUrl = returnUrl, RememberMe = rememberMe });
-	}
-
-	//
-	// POST: /Account/VerifyAuthenticatorCode
-	[HttpPost]
-	[AllowAnonymous]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> VerifyAuthenticatorCode(VerifyAuthenticatorCodeViewModel model)
-	{
-		if (!ModelState.IsValid)
-		{
-			return View(model);
-		}
-
-		// 以下代码可防止针对两个因素代码的暴力攻击。
-		// 如果用户在指定时间内输入错误代码，则用户帐户将被删除
-		// 将被锁定指定的时间。
-		var result =
-			await signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, model.RememberMe, model.RememberBrowser);
-		if (result.Succeeded)
-		{
-			return RedirectToLocal(model.ReturnUrl);
-		}
-
-		if (result.IsLockedOut)
-		{
-			return View("Lockout");
-		}
-
-		ModelState.AddModelError(string.Empty, "验证码错误");
-		return View(model);
-	}
-
-	//
-	// GET: /Account/UseRecoveryCode
-	[HttpGet]
-	[AllowAnonymous]
-	public async Task<IActionResult> UseRecoveryCode(string returnUrl = "/")
-	{
-		// Require that the user has already logged in via username/password or external login
-		var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
-		if (user == null)
-		{
-			return View("Error");
-		}
-
-		return View(new UseRecoveryCodeViewModel { ReturnUrl = returnUrl });
-	}
-
-	//
-	// POST: /Account/UseRecoveryCode
-	[HttpPost]
-	[AllowAnonymous]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> UseRecoveryCode(UseRecoveryCodeViewModel model)
-	{
-		if (!ModelState.IsValid)
-		{
-			return View(model);
-		}
-
-		var result = await signInManager.TwoFactorRecoveryCodeSignInAsync(model.Code);
-		if (result.Succeeded)
-		{
-			return RedirectToLocal(model.ReturnUrl);
-		}
-		else
-		{
-			ModelState.AddModelError(string.Empty, "验证码错误");
-			return View(model);
-		}
-	}
-
-	#endregion 验证器登录方案
 
 	#region Helpers
 

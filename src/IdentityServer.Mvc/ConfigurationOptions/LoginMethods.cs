@@ -6,6 +6,6 @@ public static class LoginMethods
 	public const string UsernamePassword = nameof(UsernamePassword);
 	//使用外部身份登录
 	public const string ExternalLogin = nameof(ExternalLogin);
-	//双因素登录登录 2FA
+	//双因素登录登录 2FA（手机，邮箱，鉴权器）
 	public const string TwoFactor = nameof(TwoFactor);
 }

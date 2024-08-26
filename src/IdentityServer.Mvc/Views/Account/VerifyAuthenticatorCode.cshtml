@@ -8,8 +8,9 @@
 		      method="post">
 			<h2>验证身份验证器代码</h2>
 			<h4>@ViewData["Status"]</h4>
-			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<div asp-validation-summary="All" class="text-danger"></div>
 			<input asp-for="RememberMe" type="hidden"/>
+			<input asp-for="ReturnUrl" type="hidden"/>
 			<div class="form-group">
 				<input asp-for="Code" class="form-control" placeholder="代码" required/>
 				<span asp-validation-for="Code" class="text-danger"></span>

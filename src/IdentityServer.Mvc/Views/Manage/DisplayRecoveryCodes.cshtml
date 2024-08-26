@@ -1,3 +1,20 @@
-﻿<div>
-	DisplayRecoveryCodes
+﻿@model DisplayRecoveryCodesViewModel
+<div class="p-4">
+	<h3>恢复代码</h3>
+	<hr>
+	<div >
+		<p class="alert alert-warning">
+			您可以打印出这些代码，并将它们保存在安全的地方。
+			请保存这些恢复代码。它们将用于恢复访问您的帐户，如果您没有注册移动应用程序或丢失了您的移动设备。
+		</p>
+		<dl class="dl-horizontal">
+			<dt>Codes:</dt>
+			@foreach (var c in Model.Codes)
+			{
+			<dd>
+				<text>@c</text>
+			</dd>
+			}
+		</dl>
+	</div>
 </div>
