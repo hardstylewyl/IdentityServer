@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using IdentityServer.CrossCuttingConcerns.Extensions;
-using IdentityServer.Domain.Entites;
+using IdentityServer.Domain.Entities;
 using IdentityServer.Infrastructure.Identity;
 using IdentityServer.Mvc.ConfigurationOptions.ExternalLogin;
 using IdentityServer.Mvc.Models;

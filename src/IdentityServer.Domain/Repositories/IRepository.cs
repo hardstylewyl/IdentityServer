@@ -1,4 +1,4 @@
-using IdentityServer.Domain.Entites.Abstractions;
+using IdentityServer.Domain.Entities.Abstractions;
 
 namespace IdentityServer.Domain.Repositories;
 

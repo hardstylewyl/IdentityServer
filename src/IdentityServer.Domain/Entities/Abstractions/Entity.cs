@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace IdentityServer.Domain.Entites.Abstractions;
+namespace IdentityServer.Domain.Entities.Abstractions;
 
 public abstract class Entity<TKey> : IHasKey<TKey>, ITrackable
 {

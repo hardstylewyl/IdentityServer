@@ -1,4 +1,4 @@
-using IdentityServer.Domain.Entites;
+using IdentityServer.Domain.Entities;
 
 namespace IdentityServer.Mvc.Models.ManageViewModels;
 

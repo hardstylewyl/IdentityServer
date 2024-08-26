@@ -1,4 +1,4 @@
-using IdentityServer.Domain.Entites;
+using IdentityServer.Domain.Entities;
 using IdentityServer.Domain.Identity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

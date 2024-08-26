@@ -1,7 +1,7 @@
-using IdentityServer.Domain.Entites.Abstractions;
+using IdentityServer.Domain.Entities.Abstractions;
 using IdentityServer.Domain.ValueObjects;
 
-namespace IdentityServer.Domain.Entites;
+namespace IdentityServer.Domain.Entities;
 
 public class UserLoginHistory : Entity<long>
 {

@@ -1,6 +1,6 @@
-using IdentityServer.Domain.Entites.Abstractions;
+using IdentityServer.Domain.Entities.Abstractions;
 
-namespace IdentityServer.Domain.Entites;
+namespace IdentityServer.Domain.Entities;
 
 public class ConfigurationEntry : Entity<long>, IAggregateRoot
 {

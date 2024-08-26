@@ -1,4 +1,4 @@
-using IdentityServer.Domain.Entites;
+using IdentityServer.Domain.Entities;
 using IdentityServer.Domain.Identity;
 using IdentityServer.Domain.Repositories;
 using Microsoft.AspNetCore.Authentication;

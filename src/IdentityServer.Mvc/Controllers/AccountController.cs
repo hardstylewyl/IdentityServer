@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using IdentityServer.Domain.Entites;
+using IdentityServer.Domain.Entities;
 using IdentityServer.Domain.Notification;
 using IdentityServer.Infrastructure.Identity;
 using IdentityServer.Mvc.ConfigurationOptions;

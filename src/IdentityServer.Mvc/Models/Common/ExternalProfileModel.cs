@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using IdentityServer.Domain.Entites;
+using IdentityServer.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using OpenIddict.Abstractions;
 
