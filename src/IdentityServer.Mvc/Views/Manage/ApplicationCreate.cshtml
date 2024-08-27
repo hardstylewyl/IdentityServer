@@ -1,0 +1,62 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using ConsentTypes = OpenIddict.Abstractions.OpenIddictConstants.ConsentTypes
+@using ClientTypes = OpenIddict.Abstractions.OpenIddictConstants.ClientTypes
+@model ApplicationCreateViewModel
+@{
+	List<SelectListItem> consentTypes =
+	[
+		new SelectListItem(ConsentTypes.Explicit, ConsentTypes.Explicit),
+		new SelectListItem(ConsentTypes.External, ConsentTypes.External),
+		new SelectListItem(ConsentTypes.Implicit, ConsentTypes.Implicit),
+		new SelectListItem(ConsentTypes.Systematic, ConsentTypes.Systematic)
+	];
+	List<SelectListItem> clientTypes =
+	[
+		new SelectListItem(ClientTypes.Confidential, ClientTypes.Confidential),
+		new SelectListItem(ClientTypes.Public, ClientTypes.Public),
+	];
+	
+}
+<div class="p-4">
+	<h3>应用创建</h3>
+	<hr>
+	<form class="layui-form" asp-controller="Manage" asp-action="ApplicationCreate" method="post">
+		<div asp-validation-summary="All" class="text-danger"></div>
+		<div class="mt-2">
+			<label>ClientId</label>
+			<input type="text" asp-for="ClientId" class="form-control">
+		</div>
+		<div class="mt-2">
+			<label>ClientSecret</label>
+			<input type="text" asp-for="ClientSecret" class="form-control">
+		</div>
+		<div class="mt-2">
+			<label>ConsentType</label>
+			<select asp-for="ConsentType" asp-items="consentTypes" class="form-control"></select>
+		</div>
+		<div class="mt-2">
+			<label>DisplayName</label>
+			<input type="text" asp-for="DisplayName" class="form-control">
+		</div>
+		<div class="mt-2">
+			<label>ClientType</label>
+			<select asp-for="ClientType" asp-items="clientTypes" class="form-control"></select>
+		</div>
+		<div class="mt-2">
+			<label>RedirectUris</label>
+			<input type="text" asp-for="RedirectUris" class="form-control">
+		</div>
+		<div class="mt-2">
+			<label>PostLogoutRedirectUris</label>
+			<input type="text" asp-for="PostLogoutRedirectUris" class="form-control">
+		</div>
+		<div class="mt-2">
+			<label>Permissions</label>
+			<input type="text" asp-for="Permissions" class="form-control">
+		</div>
+		<div class="mt-2">
+			<label>RequirePkce</label>
+			<input asp-for="RequirePkce" type="checkbox" lay-skin="switch">
+		</div>
+	</form>
+</div>

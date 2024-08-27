@@ -7,6 +7,7 @@ public class UserQueryOptions
 	public bool IncludePasswordHistories { get; set; }
 	public bool IncludeClaims { get; set; }
 	public bool IncludeUserLinks { get; set; }
+	public bool IncludeUserApplications { get; set; }
 	public bool IncludeUserLoginHistories { get; set; }
 	public bool IncludeUserRoles { get; set; }
 	public bool IncludeRoles { get; set; }

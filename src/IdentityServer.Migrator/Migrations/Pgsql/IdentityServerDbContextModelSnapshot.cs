@@ -17,7 +17,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.7")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -46,6 +46,9 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
             modelBuilder.HasSequence("roleseq")
                 .IncrementsBy(10);
 
+            modelBuilder.HasSequence("userapplicationseq")
+                .IncrementsBy(10);
+
             modelBuilder.HasSequence("userclaimseq")
                 .IncrementsBy(10);
 
@@ -64,7 +67,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
             modelBuilder.HasSequence("usertokenseq")
                 .IncrementsBy(10);
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.AuditLogEntry", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.AuditLogEntry", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -104,7 +107,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("AuditLogEntries", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.ConfigurationEntry", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.ConfigurationEntry", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -144,7 +147,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("ConfigurationEntries", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.CustomMigrationHistory", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.CustomMigrationHistory", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -173,7 +176,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("_CustomMigrationHistories", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.LocalizationEntry", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.LocalizationEntry", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -214,7 +217,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("LocalizationEntries", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.Lock", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.Lock", b =>
                 {
                     b.Property<string>("EntityId")
                         .HasColumnType("text");
@@ -239,7 +242,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("Locks", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.OutboxEvent", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.OutboxEvent", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -282,7 +285,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("OutboxEvents", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.PasswordHistory", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.PasswordHistory", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -316,7 +319,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("PasswordHistories", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.Role", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.Role", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -351,7 +354,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("Roles", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.RoleClaim", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.RoleClaim", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -389,7 +392,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("RoleClaims", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.User", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.User", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -458,7 +461,39 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.UserClaim", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.UserApplication", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"), "userapplicationseq");
+
+                    b.Property<string>("ApplicationId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("CreatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<DateTimeOffset?>("UpdatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserApplications", (string)null);
+                });
+
+            modelBuilder.Entity("IdentityServer.Domain.Entities.UserClaim", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -496,7 +531,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("UserClaims", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.UserLink", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.UserLink", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -544,7 +579,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("UserLinks", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.UserLoginHistory", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.UserLoginHistory", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -592,7 +627,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("UserLoginHistories", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.UserRole", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.UserRole", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -627,7 +662,7 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("UserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.UserToken", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.UserToken", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -896,9 +931,9 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.ToTable("OpenIddictTokens", (string)null);
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.PasswordHistory", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.PasswordHistory", b =>
                 {
-                    b.HasOne("IdentityServer.Domain.Entites.User", "User")
+                    b.HasOne("IdentityServer.Domain.Entities.User", "User")
                         .WithMany("PasswordHistories")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -907,9 +942,9 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.RoleClaim", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.RoleClaim", b =>
                 {
-                    b.HasOne("IdentityServer.Domain.Entites.Role", "Role")
+                    b.HasOne("IdentityServer.Domain.Entities.Role", "Role")
                         .WithMany("Claims")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -918,9 +953,9 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.UserClaim", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.UserClaim", b =>
                 {
-                    b.HasOne("IdentityServer.Domain.Entites.User", "User")
+                    b.HasOne("IdentityServer.Domain.Entities.User", "User")
                         .WithMany("Claims")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -929,18 +964,18 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.UserLink", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.UserLink", b =>
                 {
-                    b.HasOne("IdentityServer.Domain.Entites.User", null)
+                    b.HasOne("IdentityServer.Domain.Entities.User", null)
                         .WithMany("UserLinks")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.UserLoginHistory", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.UserLoginHistory", b =>
                 {
-                    b.HasOne("IdentityServer.Domain.Entites.User", null)
+                    b.HasOne("IdentityServer.Domain.Entities.User", null)
                         .WithMany("UserLoginHistories")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -991,15 +1026,15 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.UserRole", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.UserRole", b =>
                 {
-                    b.HasOne("IdentityServer.Domain.Entites.Role", "Role")
+                    b.HasOne("IdentityServer.Domain.Entities.Role", "Role")
                         .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("IdentityServer.Domain.Entites.User", "User")
+                    b.HasOne("IdentityServer.Domain.Entities.User", "User")
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1010,9 +1045,9 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.UserToken", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.UserToken", b =>
                 {
-                    b.HasOne("IdentityServer.Domain.Entites.User", null)
+                    b.HasOne("IdentityServer.Domain.Entities.User", null)
                         .WithMany("Tokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1043,14 +1078,14 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.Navigation("Authorization");
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.Role", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.Role", b =>
                 {
                     b.Navigation("Claims");
 
                     b.Navigation("UserRoles");
                 });
 
-            modelBuilder.Entity("IdentityServer.Domain.Entites.User", b =>
+            modelBuilder.Entity("IdentityServer.Domain.Entities.User", b =>
                 {
                     b.Navigation("Claims");
 

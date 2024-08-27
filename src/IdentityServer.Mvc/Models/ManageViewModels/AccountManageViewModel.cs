@@ -1,5 +1,3 @@
-using IdentityServer.Domain.Entites;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 
 namespace IdentityServer.Mvc.Models.ManageViewModels;

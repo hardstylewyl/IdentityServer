@@ -3,6 +3,7 @@ using IdentityServer.Domain.Notification;
 using IdentityServer.Infrastructure.DateTimes;
 using IdentityServer.Infrastructure.Identity;
 using IdentityServer.Infrastructure.Localization;
+using IdentityServer.Infrastructure.OpenIddict;
 using IdentityServer.Mvc.ConfigurationOptions;
 using IdentityServer.Mvc.Services;
 using IdentityServer.Persistence;
@@ -47,6 +48,7 @@ services.AddOpenIddict()
 		o.UseEntityFrameworkCore()
 			.UseDbContext<IdentityServerDbContext>();
 
+		o.ReplaceApplicationManager<OpenIddictApplicationManager>();
 		o.UseQuartz();
 	})
 	.AddServer(o =>

@@ -1,17 +1,21 @@
+using IdentityServer.CrossCuttingConcerns.Extensions;
 using IdentityServer.CrossCuttingConcerns.Utility;
-using IdentityServer.Domain.Entites;
+using IdentityServer.Domain.Entities;
 using IdentityServer.Domain.Notification;
 using IdentityServer.Infrastructure.Identity;
+using IdentityServer.Infrastructure.OpenIddict;
 using IdentityServer.Mvc.Models.Common;
 using IdentityServer.Mvc.Models.ManageViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using OpenIddict.Abstractions;
 
 namespace IdentityServer.Mvc.Controllers;
 
 [Authorize]
 public sealed class ManageController(
+	OpenIddictApplicationManager applicationManager,
 	UserManager userManager,
 	SignInManager signInManager,
 	IEmailNotification emailSender,
@@ -79,8 +83,9 @@ public sealed class ManageController(
 		var codes = await userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 5);
 		if (codes == null)
 		{
-			return  View("Error");
+			return View("Error");
 		}
+
 		return View("DisplayRecoveryCodes", new DisplayRecoveryCodesViewModel { Codes = codes });
 	}
 
@@ -210,7 +215,7 @@ public sealed class ManageController(
 
 		await userManager.SetTwoFactorEnabledAsync(user, false);
 		await signInManager.SignInAsync(user, isPersistent: false);
-		
+
 		AddAlert(AlertType.Success, "关闭成功");
 		return RedirectToAction(nameof(AccountManage), "Manage");
 	}
@@ -417,7 +422,7 @@ public sealed class ManageController(
 		}
 
 		var user = await GetCurrentUserAsync();
-		
+
 		var result = await userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
 		if (!result.Succeeded)
 		{
@@ -449,7 +454,7 @@ public sealed class ManageController(
 		}
 
 		var user = await GetCurrentUserAsync();
-		
+
 		var result = await userManager.AddPasswordAsync(user, model.NewPassword);
 		if (!result.Succeeded)
 		{
@@ -486,10 +491,10 @@ public sealed class ManageController(
 			return View(model);
 		}
 
-		var user =  await GetCurrentUserAsync();
+		var user = await GetCurrentUserAsync();
 		var oldClaims = await userManager.GetClaimsAsync(user);
 		//修改用户信息 更新UserClaims
-		var newClaims =  model.ExtractClaims();
+		var newClaims = model.ExtractClaims();
 		foreach (var claim in newClaims)
 		{
 			//找出需要修改的claim 类型相同value不同
@@ -499,8 +504,9 @@ public sealed class ManageController(
 				await userManager.ReplaceClaimAsync(user, diffClaim, claim);
 			}
 		}
-		
-		AddAlert(AlertType.Success, "更新用户信息成功");;
+
+		AddAlert(AlertType.Success, "更新用户信息成功");
+		;
 		return View(model);
 	}
 
@@ -511,9 +517,73 @@ public sealed class ManageController(
 	//
 	// GET: /Manage/Application
 	[HttpGet]
-	public async Task<IActionResult> Application()
+	public async Task<IActionResult> ApplicationManage()
 	{
-		return View();
+		var user = await GetCurrentUserAsync();
+		var appIds = await userManager.GetUserApplicationIdsAsync(user);
+		var apps = await applicationManager
+			.ListAsync(appIds)
+			.ToListAsync();
+
+		return View(new ApplicationManageViewModel { Applications = apps });
+	}
+
+	[HttpGet]
+	public IActionResult ApplicationCreate(long userId)
+	{
+		return View(new ApplicationCreateViewModel { UserId = userId });
+	}
+	
+	[HttpPost]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> ApplicationCreate(ApplicationCreateViewModel model)
+	{
+		if (!ModelState.IsValid)
+		{
+			return View(model);
+		}
+
+		var entity = new OpenIddictApplicationDescriptor
+		{
+			ClientId = model.ClientId,
+			ClientSecret = model.ClientSecret,
+			ConsentType = model.ConsentType,
+			DisplayName = model.DisplayName,
+			ClientType = model.ClientType,
+			RedirectUris = { },
+			PostLogoutRedirectUris = { },
+			Permissions = {},
+			Requirements = {  }
+		};
+
+		//添加回调地址
+		foreach (var uri in model.RedirectUris)
+		{
+			entity.RedirectUris.Add(new Uri(uri));
+		}
+		
+		//添加登出回调地址
+		foreach (var uri in model.PostLogoutRedirectUris)
+		{
+			entity.PostLogoutRedirectUris.Add(new Uri(uri));
+		}
+		
+		//添加权限
+		foreach (var permission in model.Permissions)
+		{
+			entity.Permissions.Add(permission);
+		}
+		
+		//是否pkce
+		if (model.RequirePkce)
+		{
+			entity.Requirements.Add(OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange);
+		}
+		
+		
+		var app =await  applicationManager.CreateAsync(entity);
+		
+		return View(model);
 	}
 
 	#endregion 第三方应用
@@ -526,7 +596,7 @@ public sealed class ManageController(
 	{
 		var user = await GetCurrentUserAsync();
 		var loginHistories = await signInManager.GetLoginHistoriesAsync(user);
-		return View(new LoginHistoriesViewModel(){ LoginHistories = loginHistories });
+		return View(new LoginHistoriesViewModel() { LoginHistories = loginHistories });
 	}
 
 	#endregion 登录历史

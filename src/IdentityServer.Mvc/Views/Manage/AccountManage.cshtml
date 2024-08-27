@@ -19,12 +19,14 @@
 	@* 邮箱 *@
 	<div class="mt-2">
 		<div>
-			<dt>邮箱@(emailLabel)</dt>
-			@* 邮箱未添加 *@
-			@if (!Model.EmailConfirmed)
-			{
-				<a asp-controller="Manage" asp-action="ConfirmEmail" asp-route-email="@Model.Email">验证</a>
-			}
+			<dt>
+				邮箱@(emailLabel)
+				@* 邮箱未添加 *@
+				@if (!Model.EmailConfirmed)
+				{
+					<a asp-controller="Manage" asp-action="ConfirmEmail" asp-route-email="@Model.Email">验证</a>
+				}
+			</dt>
 		</div>
 		<form method="get" asp-controller="Manage" asp-action="ChangeEmail">
 			<input asp-for="Email" type="text" disabled/>
@@ -82,16 +84,16 @@
 		<dd>
 			@if (Model.AuthenticatorKey == null)
 			{
-			<form asp-controller="Manage" asp-action="ResetAuthenticatorKey" method="post" class="form-horizontal" role="form">
-				AuthenticatorKey: [<button type="submit" class="btn btn-link">生成</button>]
-			</form>
+				<form asp-controller="Manage" asp-action="ResetAuthenticatorKey" method="post" class="form-horizontal" role="form">
+					AuthenticatorKey: [<button type="submit" class="btn btn-link">生成</button>]
+				</form>
 			}
 			else
 			{
-			<text>AuthenticatorKey: @Model.AuthenticatorKey</text>
-			<form asp-controller="Manage" asp-action="GenerateRecoveryCode" method="post" class="form-horizontal" role="form">
-				RecoveryCode: [<button type="submit" class="btn btn-link">生成新的恢复代码</button>]
-			</form>
+				<text>AuthenticatorKey: @Model.AuthenticatorKey</text>
+				<form asp-controller="Manage" asp-action="GenerateRecoveryCode" method="post" class="form-horizontal" role="form">
+					RecoveryCode: [<button type="submit" class="btn btn-link">生成新的恢复代码</button>]
+				</form>
 			}
 		</dd>
 	</div>

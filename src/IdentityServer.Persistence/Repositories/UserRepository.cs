@@ -35,6 +35,11 @@ public class UserRepository : Repository<User, long>, IUserRepository
 		{
 			query = query.Include(x => x.UserLinks);
 		}
+		
+		if (queryOptions.IncludeUserApplications)
+		{
+			query = query.Include(x => x.UserApplications);
+		}
 
 		if (queryOptions.IncludeUserLoginHistories)
 		{

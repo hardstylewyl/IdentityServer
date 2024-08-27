@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using IdentityServer.Domain.Entites;
 using OpenIddict.Abstractions;
 
 namespace IdentityServer.Mvc.Models.Common;
