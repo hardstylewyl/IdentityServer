@@ -15,7 +15,14 @@
 		new SelectListItem(ClientTypes.Confidential, ClientTypes.Confidential),
 		new SelectListItem(ClientTypes.Public, ClientTypes.Public),
 	];
-	
+	var Options = new List<SelectListItem>
+	{
+		new SelectListItem { Text = "Option 1", Value = "1" },
+		new SelectListItem { Text = "Option 2", Value = "2" },
+		new SelectListItem { Text = "Option 3", Value = "3" }
+	};
+	var SelectedValues = new string[] { "1", "3" };
+
 }
 <div class="p-4">
 	<h3>应用创建</h3>
@@ -42,13 +49,31 @@
 			<label>ClientType</label>
 			<select asp-for="ClientType" asp-items="clientTypes" class="form-control"></select>
 		</div>
-		<div class="mt-2">
-			<label>RedirectUris</label>
-			<input type="text" asp-for="RedirectUris" class="form-control">
+		<div id="redirectUris" class="mt-2">
+			<label>
+				RedirectUris
+				<img src="~/images/icon_添加.svg" id="addRedirectUri" style="color: blue;cursor: pointer" alt=""/>
+			</label>
+			@for (var i = 0; i < Model.RedirectUris.Length; i++)
+			{
+				<div class="redirect-uri-input d-flex">
+					<input type="text" name="RedirectUris[@i]" value="@Model.RedirectUris[i]" class="form-control" placeholder="用户授权后，重定向的地址，例如: https://xxx.com/login/callback_xx" required/>
+					<img src="~/images/icon_删除.svg" class="remove-redirect-uri px-3" style="cursor: pointer;" alt="" @(Model.RedirectUris.Length == 1 ? "disabled" : "")/>
+				</div>
+			}
 		</div>
-		<div class="mt-2">
-			<label>PostLogoutRedirectUris</label>
-			<input type="text" asp-for="PostLogoutRedirectUris" class="form-control">
+		<div id="postLogoutRedirectUris" class="mt-2">
+			<label>
+				PostLogoutRedirectUris
+				<img src="~/images/icon_添加.svg" id="addPostLogoutRedirectUris" style="color: blue;cursor: pointer" alt=""/>
+			</label>
+			@for (var i = 0; i < Model.PostLogoutRedirectUris.Length; i++)
+			{
+				<div class="postLogout-redirect-uri-input d-flex">
+					<input type="text" name="PostLogoutRedirectUris[@i]" value="@Model.PostLogoutRedirectUris[i]" class="form-control" placeholder="用户登出后，重定向的地址，例如: https://xxx.com/logout/callback_xx" required/>
+					<img src="~/images/icon_删除.svg" class="remove-postLogoutRedirectUris-uri px-3" style="cursor: pointer;" alt="" @(Model.PostLogoutRedirectUris.Length == 1 ? "disabled" : "")/>
+				</div>
+			}
 		</div>
 		<div class="mt-2">
 			<label>Permissions</label>
@@ -60,3 +85,67 @@
 		</div>
 	</form>
 </div>
+
+@section Scripts {
+	<script>
+		"use strict";
+		function addInputField(containerId, inputClass, addButtonId, inputNamePrefix,placeholder) {
+			const container = $(`#${containerId}`);
+			const index = container.find(`.${inputClass}`).length;
+			const inputHtml = `
+	        <div class="${inputClass} d-flex mt-2">
+	            <input type="text" name="${inputNamePrefix}[${index}]" class="form-control" placeholder="${placeholder}" required/>
+	            <img src="/images/icon_删除.svg" class="remove-${inputClass} px-3" style="cursor: pointer;" alt="" />
+	        </div>`;
+			container.append(inputHtml);
+
+			// 检查是否只有一个输入框，如果是，则禁用删除按钮
+			updateRemoveButtonState(container, inputClass);
+		}
+
+		function removeInputField(containerId, inputClass) {
+			$(document).on('click', `.remove-${inputClass}`, function () {
+				const $inputContainer = $(this).closest(`.${inputClass}`);
+				$inputContainer.remove();
+
+				// 重新排序输入框的索引
+				const container = $(`#${containerId}`);
+				container.find(`.${inputClass}`).each(function (index) {
+					const $input = $(this).find(`input[name^="${inputNamePrefix}"]`);
+					$input.attr('name', `${inputNamePrefix}[${index}]`);
+				});
+
+				// 检查是否只有一个输入框，如果是，则禁用删除按钮
+				updateRemoveButtonState(container, inputClass);
+			});
+		}
+
+		function updateRemoveButtonState(container, inputClass) {
+			if (container.find(`.${inputClass}`).length <= 1) {
+				container.find(`.remove-${inputClass}`).prop('disabled', true);
+			} else {
+				container.find(`.remove-${inputClass}`).prop('disabled', false);
+			}
+		}
+
+		// 添加 Redirect URI 输入框
+		$('#addRedirectUri').click(function () {
+			addInputField('redirectUris', 'redirect-uri-input', 'addRedirectUri', 'RedirectUris','用户授权后，重定向的地址，例如: https://xxx.com/login/callback_xx');
+		});
+
+		// 删除 Redirect URI 输入框
+		removeInputField('redirectUris', 'redirect-uri-input');
+
+		// 添加 Post Logout Redirect URI 输入框
+		$('#addPostLogoutRedirectUris').click(function () {
+			addInputField('postLogoutRedirectUris', 'postLogout-redirect-uri-input', 'addPostLogoutRedirectUris', 'PostLogoutRedirectUris','用户登出后，重定向的地址，例如: https://xxx.com/logout/callback_xx');
+		});
+
+		// 删除 Post Logout Redirect URI 输入框
+		removeInputField('postLogoutRedirectUris', 'postLogout-redirect-uri-input');
+
+		// 初始状态
+		updateRemoveButtonState($('#redirectUris'), 'redirect-uri-input');
+		updateRemoveButtonState($('#postLogoutRedirectUris'), 'postLogout-redirect-uri-input');
+	</script>
+}
