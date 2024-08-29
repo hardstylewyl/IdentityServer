@@ -1,3 +1,4 @@
+using System.Text.Json;
 using IdentityServer.CrossCuttingConcerns.Extensions;
 using IdentityServer.CrossCuttingConcerns.Utility;
 using IdentityServer.Domain.Entities;
@@ -529,11 +530,11 @@ public sealed class ManageController(
 	}
 
 	[HttpGet]
-	public IActionResult ApplicationCreate(long userId)
+	public IActionResult ApplicationCreate()
 	{
-		return View(new ApplicationCreateViewModel { UserId = userId });
+		return View(new ApplicationCreateViewModel());
 	}
-	
+
 	[HttpPost]
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> ApplicationCreate(ApplicationCreateViewModel model)
@@ -543,47 +544,207 @@ public sealed class ManageController(
 			return View(model);
 		}
 
+		var clientId = Guid.NewGuid().ToString("N");
+		var clientSecret = Guid.NewGuid().ToString("N");
+
 		var entity = new OpenIddictApplicationDescriptor
 		{
-			ClientId = model.ClientId,
-			ClientSecret = model.ClientSecret,
+			ClientId = clientId,
+			ClientSecret = clientSecret,
 			ConsentType = model.ConsentType,
 			DisplayName = model.DisplayName,
 			ClientType = model.ClientType,
 			RedirectUris = { },
 			PostLogoutRedirectUris = { },
-			Permissions = {},
-			Requirements = {  }
+			Permissions = { },
+			Requirements = { }
 		};
 
 		//添加回调地址
 		foreach (var uri in model.RedirectUris)
 		{
+			if (!Checker.Url(uri))
+			{
+				ModelState.AddModelError(string.Empty, $"RedirectUris Error: {uri}不是有效的链接");
+				return View(model);
+			}
+
 			entity.RedirectUris.Add(new Uri(uri));
 		}
-		
+
 		//添加登出回调地址
 		foreach (var uri in model.PostLogoutRedirectUris)
 		{
+			if (!Checker.Url(uri))
+			{
+				ModelState.AddModelError(string.Empty, $"PostLogoutRedirectUris Error: {uri}不是有效的链接");
+				return View(model);
+			}
+
 			entity.PostLogoutRedirectUris.Add(new Uri(uri));
 		}
-		
-		//添加权限
-		foreach (var permission in model.Permissions)
+
+		//默认添加一些权限
+		entity.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Authorization);
+		entity.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Logout);
+		entity.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Token);
+		entity.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode);
+		entity.Permissions.Add(OpenIddictConstants.Permissions.ResponseTypes.Code);
+
+		//添加scope权限
+		foreach (var permission in model.AllowScopes.Split(','))
 		{
-			entity.Permissions.Add(permission);
+			entity.Permissions.Add(OpenIddictConstants.Permissions.Prefixes.Scope + permission);
 		}
-		
+
 		//是否pkce
 		if (model.RequirePkce)
 		{
 			entity.Requirements.Add(OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange);
 		}
-		
-		
-		var app =await  applicationManager.CreateAsync(entity);
-		
+
+		//创建应用
+		var app = await applicationManager.CreateAsync(entity);
+
+		if (string.IsNullOrEmpty(app.Id))
+		{
+			ModelState.AddModelError(string.Empty, $"app 创建失败");
+			return View(model);
+		}
+
+		//建立用户和应用关联
+		var result = await userManager.AddUserApplicationAsync(await GetCurrentUserAsync(), app.Id);
+		if (!result.Succeeded)
+		{
+			AddErrors(result);
+			return View(model);
+		}
+
+		return RedirectToAction(nameof(ApplicationEdit), new { appId = app.Id });
+	}
+
+
+	[HttpGet]
+	public async Task<IActionResult> ApplicationEdit(string appId)
+	{
+		var user = await GetCurrentUserAsync();
+		var userApps = await userManager.GetUserApplicationIdsAsync(user);
+		if (!userApps.Contains(appId))
+		{
+			return NotFound();
+		}
+
+		var app = await applicationManager.FindByIdAsync(appId);
+		if (app == null)
+		{
+			return NotFound();
+		}
+
+		return View(new ApplicationEditViewModel
+		{
+			ClientId = app.ClientId!,
+			ClientSecret = app.ClientSecret!,
+			ConsentType = app.ConsentType!,
+			DisplayName = app.DisplayName!,
+			ClientType = app.ClientType!,
+			RedirectUris = string.IsNullOrWhiteSpace(app.RedirectUris)
+				? new string[1]
+				: JsonSerializer.Deserialize<string[]>(app.RedirectUris)!,
+			PostLogoutRedirectUris = string.IsNullOrWhiteSpace(app.PostLogoutRedirectUris)
+				? new string[1]
+				: JsonSerializer.Deserialize<string[]>(app.PostLogoutRedirectUris)!,
+			AllowScopes = string.IsNullOrWhiteSpace(app.Permissions)
+				? ""
+				: string.Join(',',
+					JsonSerializer.Deserialize<string[]>(app.Permissions)!.Where(x =>
+						x.StartsWith(OpenIddictConstants.Permissions.Prefixes.Scope))),
+			RequirePkce = app.Requirements!.Contains(OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange)
+		});
+	}
+
+	[HttpPost]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> ApplicationEdit(ApplicationEditViewModel model)
+	{
+		if (!ModelState.IsValid)
+		{
+			return View(model);
+		}
+
+		var app = await applicationManager.FindByClientIdAsync(model.ClientId);
+		if (app == null || string.IsNullOrWhiteSpace(app.Id))
+		{
+			return NotFound();
+		}
+
+		var user = await GetCurrentUserAsync();
+		var userApps = await userManager.GetUserApplicationIdsAsync(user);
+		if (!userApps.Contains(app.Id))
+		{
+			return NotFound();
+		}
+
+		app.ConsentType = model.ConsentType;
+		app.DisplayName = model.DisplayName;
+		app.ClientType = model.ClientType;
+		app.RedirectUris = string.Join(',', model.RedirectUris);
+		app.PostLogoutRedirectUris = string.Join(',', model.PostLogoutRedirectUris);
+		var permissions = app.Permissions!.Split(',')
+			.Where(x => !x.StartsWith(OpenIddictConstants.Permissions.Prefixes.Scope));
+		var newPermissions =
+			model.AllowScopes.Split(',').Select(x => OpenIddictConstants.Permissions.Prefixes.Scope + x);
+		app.Permissions = string.Join(',', [..permissions, ..newPermissions]);
+		app.Requirements = model.RequirePkce
+			? OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange
+			: string.Empty;
 		return View(model);
+	}
+
+	//
+	// GET: /Manage/ApplicationUpdateClientIdAndSecret
+	[HttpGet]
+	public async Task<IActionResult> ApplicationUpdateClientIdAndSecret(string clientId)
+	{
+		var app = await applicationManager.FindByClientIdAsync(clientId);
+		if (app == null || string.IsNullOrWhiteSpace(app.Id))
+		{
+			return NotFound();
+		}
+
+		var user = await GetCurrentUserAsync();
+		var userApps = await userManager.GetUserApplicationIdsAsync(user);
+		if (!userApps.Contains(app.Id))
+		{
+			return NotFound();
+		}
+
+		app.ClientId = Guid.NewGuid().ToString("N");
+		app.ClientSecret = Guid.NewGuid().ToString("N");
+		await applicationManager.UpdateAsync(app);
+
+		return RedirectToAction(nameof(ApplicationEdit), new { appId = app.Id });
+	}
+
+	//
+	// GET: /Manage/ApplicationDelete
+	[HttpGet]
+	public async Task<IActionResult> ApplicationDelete(string appId)
+	{
+		var app = await applicationManager.FindByIdAsync(appId);
+		if (app == null || string.IsNullOrWhiteSpace(app.Id))
+		{
+			return NotFound();
+		}
+
+		var user = await GetCurrentUserAsync();
+		var userApps = await userManager.GetUserApplicationIdsAsync(user);
+		if (!userApps.Contains(app.Id))
+		{
+			return NotFound();
+		}
+
+		await applicationManager.DeleteAsync(app);
+		return RedirectToAction(nameof(ApplicationManage));
 	}
 
 	#endregion 第三方应用

@@ -7,4 +7,13 @@
 		</form>
 	</div>
 	<hr>
+	<div>
+		@foreach(var app in Model.Applications)
+		{
+		<form method="get" asp-controller="Manage" asp-action="ApplicationEdit">
+			<input name="appId" value="@app.Id" hidden>
+			<button type="submit" class="btn btn-primary">@app.DisplayName</button>
+		</form>
+		}
+	</div>
 </div>

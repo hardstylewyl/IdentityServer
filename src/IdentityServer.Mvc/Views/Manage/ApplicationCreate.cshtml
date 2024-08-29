@@ -6,8 +6,8 @@
 	List<SelectListItem> consentTypes =
 	[
 		new SelectListItem(ConsentTypes.Explicit, ConsentTypes.Explicit),
-		new SelectListItem(ConsentTypes.External, ConsentTypes.External),
 		new SelectListItem(ConsentTypes.Implicit, ConsentTypes.Implicit),
+		new SelectListItem(ConsentTypes.External, ConsentTypes.External),
 		new SelectListItem(ConsentTypes.Systematic, ConsentTypes.Systematic)
 	];
 	List<SelectListItem> clientTypes =
@@ -15,35 +15,27 @@
 		new SelectListItem(ClientTypes.Confidential, ClientTypes.Confidential),
 		new SelectListItem(ClientTypes.Public, ClientTypes.Public),
 	];
-	var Options = new List<SelectListItem>
-	{
-		new SelectListItem { Text = "Option 1", Value = "1" },
-		new SelectListItem { Text = "Option 2", Value = "2" },
-		new SelectListItem { Text = "Option 3", Value = "3" }
-	};
-	var SelectedValues = new string[] { "1", "3" };
-
 }
 <div class="p-4">
 	<h3>应用创建</h3>
 	<hr>
 	<form class="layui-form" asp-controller="Manage" asp-action="ApplicationCreate" method="post">
 		<div asp-validation-summary="All" class="text-danger"></div>
-		<div class="mt-2">
-			<label>ClientId</label>
-			<input type="text" asp-for="ClientId" class="form-control">
-		</div>
-		<div class="mt-2">
-			<label>ClientSecret</label>
-			<input type="text" asp-for="ClientSecret" class="form-control">
-		</div>
+		@* <div class="mt-2"> *@
+		@* 	<label>ClientId</label> *@
+		@* 	<input type="text" asp-for="ClientId" class="form-control"> *@
+		@* </div> *@
+		@* <div class="mt-2"> *@
+		@* 	<label>ClientSecret</label> *@
+		@* 	<input type="text" asp-for="ClientSecret" class="form-control"> *@
+		@* </div> *@
 		<div class="mt-2">
 			<label>ConsentType</label>
-			<select asp-for="ConsentType" asp-items="consentTypes" class="form-control"></select>
+			<select asp-for="ConsentType" asp-items="consentTypes" class="form-control" disabled required></select>
 		</div>
 		<div class="mt-2">
 			<label>DisplayName</label>
-			<input type="text" asp-for="DisplayName" class="form-control">
+			<input type="text" asp-for="DisplayName" class="form-control" disabled required>
 		</div>
 		<div class="mt-2">
 			<label>ClientType</label>
@@ -52,13 +44,13 @@
 		<div id="redirectUris" class="mt-2">
 			<label>
 				RedirectUris
-				<img src="~/images/icon_添加.svg" id="addRedirectUri" style="color: blue;cursor: pointer" alt=""/>
+				<img src="~/images/icon_添加.svg" id="addRedirectUri" style="color: blue;cursor: pointer" alt="" />
 			</label>
 			@for (var i = 0; i < Model.RedirectUris.Length; i++)
 			{
-				<div class="redirect-uri-input d-flex">
+				<div class="redirect-uri-input d-flex mt-2">
 					<input type="text" name="RedirectUris[@i]" value="@Model.RedirectUris[i]" class="form-control" placeholder="用户授权后，重定向的地址，例如: https://xxx.com/login/callback_xx" required/>
-					<img src="~/images/icon_删除.svg" class="remove-redirect-uri px-3" style="cursor: pointer;" alt="" @(Model.RedirectUris.Length == 1 ? "disabled" : "")/>
+					<img src="~/images/icon_删除.svg" class="remove-redirect-uri px-3" style="cursor: pointer;" alt="" disabled="@(Model.RedirectUris.Length == 1)" />
 				</div>
 			}
 		</div>
@@ -69,19 +61,22 @@
 			</label>
 			@for (var i = 0; i < Model.PostLogoutRedirectUris.Length; i++)
 			{
-				<div class="postLogout-redirect-uri-input d-flex">
+				<div class="postLogout-redirect-uri-input d-flex mt-2">
 					<input type="text" name="PostLogoutRedirectUris[@i]" value="@Model.PostLogoutRedirectUris[i]" class="form-control" placeholder="用户登出后，重定向的地址，例如: https://xxx.com/logout/callback_xx" required/>
-					<img src="~/images/icon_删除.svg" class="remove-postLogoutRedirectUris-uri px-3" style="cursor: pointer;" alt="" @(Model.PostLogoutRedirectUris.Length == 1 ? "disabled" : "")/>
+					<img src="~/images/icon_删除.svg" class="remove-postLogout-redirect-uri px-3" style="cursor: pointer;" alt="" disabled="@(Model.PostLogoutRedirectUris.Length == 1)" />
 				</div>
 			}
 		</div>
 		<div class="mt-2">
-			<label>Permissions</label>
-			<input type="text" asp-for="Permissions" class="form-control">
+			<label>AllowScopes</label>
+			<input type="text" asp-for="AllowScopes" placeholder="逗号分隔的权限，例如: profile,email" class="form-control">
 		</div>
 		<div class="mt-2">
 			<label>RequirePkce</label>
 			<input asp-for="RequirePkce" type="checkbox" lay-skin="switch">
+		</div>
+		<div class="mt-2">
+			<button type="submit" class="btn btn-primary">创建</button>
 		</div>
 	</form>
 </div>
@@ -128,24 +123,26 @@
 			}
 		}
 
-		// 添加 Redirect URI 输入框
-		$('#addRedirectUri').click(function () {
-			addInputField('redirectUris', 'redirect-uri-input', 'addRedirectUri', 'RedirectUris','用户授权后，重定向的地址，例如: https://xxx.com/login/callback_xx');
+		$(document).ready(function () {
+			// 添加 Redirect URI 输入框
+			$('#addRedirectUri').click(function () {
+				addInputField('redirect-uri', 'redirect-uri-input', 'addRedirectUri', 'RedirectUris','用户授权后，重定向的地址，例如: https://xxx.com/login/callback_xx');
+			});
+
+			// 删除 Redirect URI 输入框
+			removeInputField('redirectUris', 'redirect-uri-input');
+
+			// 添加 Post Logout Redirect URI 输入框
+			$('#addPostLogoutRedirectUris').click(function () {
+				addInputField('postLogout-redirect-uri', 'postLogout-redirect-uri-input', 'addPostLogoutRedirectUris', 'PostLogoutRedirectUris','用户登出后，重定向的地址，例如: https://xxx.com/logout/callback_xx');
+			});
+
+			// 删除 Post Logout Redirect URI 输入框
+			removeInputField('postLogoutRedirectUris', 'postLogout-redirect-uri-input');
+
+			// 初始状态
+			updateRemoveButtonState($('#redirectUris'), 'redirect-uri-input');
+			updateRemoveButtonState($('#postLogoutRedirectUris'), 'postLogout-redirect-uri-input');
 		});
-
-		// 删除 Redirect URI 输入框
-		removeInputField('redirectUris', 'redirect-uri-input');
-
-		// 添加 Post Logout Redirect URI 输入框
-		$('#addPostLogoutRedirectUris').click(function () {
-			addInputField('postLogoutRedirectUris', 'postLogout-redirect-uri-input', 'addPostLogoutRedirectUris', 'PostLogoutRedirectUris','用户登出后，重定向的地址，例如: https://xxx.com/logout/callback_xx');
-		});
-
-		// 删除 Post Logout Redirect URI 输入框
-		removeInputField('postLogoutRedirectUris', 'postLogout-redirect-uri-input');
-
-		// 初始状态
-		updateRemoveButtonState($('#redirectUris'), 'redirect-uri-input');
-		updateRemoveButtonState($('#postLogoutRedirectUris'), 'postLogout-redirect-uri-input');
 	</script>
 }
