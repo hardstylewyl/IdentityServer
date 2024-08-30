@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IdentityServer.Mvc.Models.ManageViewModels;
 
-public class VerifyPhoneNumberViewModel
+public sealed class VerifyPhoneNumberViewModel
 {
 	[Required]
 	public string Code { get; set; }

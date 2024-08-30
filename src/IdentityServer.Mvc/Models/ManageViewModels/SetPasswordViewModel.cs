@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IdentityServer.Mvc.Models.ManageViewModels;
 
-public class SetPasswordViewModel
+public sealed class SetPasswordViewModel
 {
 	[Required]
 	[StringLength(100, ErrorMessage = "{0} 的长度必须至少为 {2} 个字符", MinimumLength = 6)]

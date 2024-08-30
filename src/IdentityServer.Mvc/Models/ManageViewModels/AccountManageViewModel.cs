@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace IdentityServer.Mvc.Models.ManageViewModels;
 
-public class AccountManageViewModel
+public sealed class AccountManageViewModel
 {
 	//是否有手机号
 	public bool HasPhoneNumber => !string.IsNullOrWhiteSpace(PhoneNumber);

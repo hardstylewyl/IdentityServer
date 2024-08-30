@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IdentityServer.Mvc.Models.ManageViewModels;
 
-public class ChangePasswordViewModel
+public sealed class ChangePasswordViewModel
 {
 	[Required]
 	[DataType(DataType.Password)]
