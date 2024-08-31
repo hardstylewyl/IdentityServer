@@ -22,13 +22,16 @@ new SelectListItem(ClientTypes.Public, ClientTypes.Public),
 	      asp-controller="Manage"
 	      asp-action="ApplicationEdit" class="layui-form">
 		<div asp-validation-summary="All" class="text-danger"></div>
+		<input asp-for="ApplicationId" hidden readonly>
 		<div class="mt-2">
 			<label>ClientId</label>
-			<input type="text" asp-for="ClientId" class="form-control">
+			<input asp-for="ClientId" hidden readonly>
+			<input asp-for="ClientId" class="form-control" disabled readonly>
 		</div>
 		<div class="mt-2">
 			<label>ClientSecret</label>
-			<input type="text" asp-for="ClientSecret" class="form-control">
+			<input asp-for="ClientSecret" hidden readonly>
+			<input asp-for="ClientSecret" class="form-control" disabled readonly>
 		</div>
 		<div class="mt-2">
 			<label>ConsentType</label>
@@ -36,7 +39,7 @@ new SelectListItem(ClientTypes.Public, ClientTypes.Public),
 		</div>
 		<div class="mt-2">
 			<label>DisplayName</label>
-			<input type="text" asp-for="DisplayName" class="form-control">
+			<input asp-for="DisplayName" class="form-control">
 		</div>
 		<div class="mt-2">
 			<label>ClientType</label>
@@ -77,8 +80,8 @@ new SelectListItem(ClientTypes.Public, ClientTypes.Public),
 			<input asp-for="RequirePkce" type="checkbox" lay-skin="switch">
 		</div>
 		<div class="mt-2">
-			<button type="submit" name="submit.update" class="btn btn-primary">提交修改</button>
-			<button type="submit" name="submit.delete" class="btn btn-danger">删除应用</button>
+			<button type="submit" name="submit" class="btn btn-primary">提交修改</button>
+			<a asp-controller="Manage" asp-action="ApplicationDelete" asp-route-appId="@Model.ApplicationId" class="btn btn-danger">删除应用</a>
 		</div>
 	</form>
 </div>
@@ -128,7 +131,7 @@ new SelectListItem(ClientTypes.Public, ClientTypes.Public),
 	$(document).ready(function () {
 		// 添加 Redirect URI 输入框
 		$('#addRedirectUri').click(function () {
-			addInputField('redirect-uri', 'redirect-uri-input', 'addRedirectUri', 'RedirectUris','用户授权后，重定向的地址，例如: https://xxx.com/login/callback_xx');
+			addInputField('redirectUris', 'redirect-uri-input', 'addRedirectUri', 'RedirectUris','用户授权后，重定向的地址，例如: https://xxx.com/login/callback_xx');
 		});
 
 		// 删除 Redirect URI 输入框
@@ -136,7 +139,7 @@ new SelectListItem(ClientTypes.Public, ClientTypes.Public),
 
 		// 添加 Post Logout Redirect URI 输入框
 		$('#addPostLogoutRedirectUris').click(function () {
-			addInputField('postLogout-redirect-uri', 'postLogout-redirect-uri-input', 'addPostLogoutRedirectUris', 'PostLogoutRedirectUris','用户登出后，重定向的地址，例如: https://xxx.com/logout/callback_xx');
+			addInputField('postLogoutRedirectUris', 'postLogout-redirect-uri-input', 'addPostLogoutRedirectUris', 'PostLogoutRedirectUris','用户登出后，重定向的地址，例如: https://xxx.com/logout/callback_xx');
 		});
 
 		// 删除 Post Logout Redirect URI 输入框

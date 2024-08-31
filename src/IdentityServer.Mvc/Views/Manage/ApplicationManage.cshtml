@@ -8,12 +8,16 @@
 	</div>
 	<hr>
 	<div>
-		@foreach(var app in Model.Applications)
+		@foreach (var (u, o) in Model.Applications.Select(x => (x.UserApplication, x.OpenIdApplication)))
 		{
-		<form method="get" asp-controller="Manage" asp-action="ApplicationEdit">
-			<input name="appId" value="@app.Id" hidden>
-			<button type="submit" class="btn btn-primary">@app.DisplayName</button>
-		</form>
+			<form method="get" asp-controller="Manage" asp-action="ApplicationEdit">
+				<input name="appId" value="@o.Id" hidden>
+				<dt>
+					应用名称：@o.DisplayName
+				</dt>
+				<div>创建时间：@u.CreatedDateTime</div>
+				<button type="submit" class="btn btn-primary">编辑应用</button>
+			</form>
 		}
 	</div>
 </div>

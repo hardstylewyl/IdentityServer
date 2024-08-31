@@ -46,13 +46,21 @@ public sealed class UserManager(
 		return await UpdateUserAsync(user).ConfigureAwait(false);
 	}
 
-	public async Task<IList<string>> GetUserApplicationIdsAsync(User user,
+	public async Task<IList<UserApplication>> GetUserApplications(User user,
 		CancellationToken cancellationToken = default)
 	{
 		user = await GetUserApplicationQuery()
 			.FirstAsync(x => x.Id == user.Id, cancellationToken);
 
-		return user.UserApplications.Select(x => x.ApplicationId).ToList();
+		return user.UserApplications;
+	}
+	
+	public async Task<bool> CheckApplicationOwenAsync(User user,
+		string applicationId,
+		CancellationToken cancellationToken = default)
+	{
+		var apps =await GetUserApplications(user, cancellationToken);
+		return apps.Any(x => x.ApplicationId == applicationId);
 	}
 
 	public async Task<IdentityResult> AddUserApplicationAsync(User user, string applicationId,

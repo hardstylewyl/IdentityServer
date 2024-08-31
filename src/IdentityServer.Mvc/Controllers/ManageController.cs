@@ -521,11 +521,16 @@ public sealed class ManageController(
 	public async Task<IActionResult> ApplicationManage()
 	{
 		var user = await GetCurrentUserAsync();
-		var appIds = await userManager.GetUserApplicationIdsAsync(user);
-		var apps = await applicationManager
-			.ListAsync(appIds)
+		var userApps = await userManager.GetUserApplications(user);
+		var openIdApps = await applicationManager
+			.ListAsync(userApps.Select(x=>x.ApplicationId))
 			.ToListAsync();
-
+		
+		var apps =  userApps.Join(openIdApps, 
+			x => x.ApplicationId, 
+			y => y.Id,
+			(x, y) => new UserApplicationModel { OpenIdApplication = y, UserApplication = x });
+		
 		return View(new ApplicationManageViewModel { Applications = apps });
 	}
 
@@ -628,8 +633,7 @@ public sealed class ManageController(
 	public async Task<IActionResult> ApplicationEdit(string appId)
 	{
 		var user = await GetCurrentUserAsync();
-		var userApps = await userManager.GetUserApplicationIdsAsync(user);
-		if (!userApps.Contains(appId))
+		if (!await userManager.CheckApplicationOwenAsync(user,appId))
 		{
 			return NotFound();
 		}
@@ -642,6 +646,7 @@ public sealed class ManageController(
 
 		return View(new ApplicationEditViewModel
 		{
+			ApplicationId = app.Id,
 			ClientId = app.ClientId!,
 			ClientSecret = app.ClientSecret!,
 			ConsentType = app.ConsentType!,
@@ -678,8 +683,7 @@ public sealed class ManageController(
 		}
 
 		var user = await GetCurrentUserAsync();
-		var userApps = await userManager.GetUserApplicationIdsAsync(user);
-		if (!userApps.Contains(app.Id))
+		if (!await userManager.CheckApplicationOwenAsync(user,app.Id))
 		{
 			return NotFound();
 		}
@@ -687,33 +691,35 @@ public sealed class ManageController(
 		app.ConsentType = model.ConsentType;
 		app.DisplayName = model.DisplayName;
 		app.ClientType = model.ClientType;
-		app.RedirectUris = string.Join(',', model.RedirectUris);
-		app.PostLogoutRedirectUris = string.Join(',', model.PostLogoutRedirectUris);
+		app.RedirectUris = JsonSerializer.Serialize(model.RedirectUris);
+		app.PostLogoutRedirectUris = JsonSerializer.Serialize(model.PostLogoutRedirectUris);
 		var permissions = app.Permissions!.Split(',')
 			.Where(x => !x.StartsWith(OpenIddictConstants.Permissions.Prefixes.Scope));
 		var newPermissions =
 			model.AllowScopes.Split(',').Select(x => OpenIddictConstants.Permissions.Prefixes.Scope + x);
-		app.Permissions = string.Join(',', [..permissions, ..newPermissions]);
-		app.Requirements = model.RequirePkce
+		app.Permissions =  JsonSerializer.Serialize<string[]>([..permissions, ..newPermissions]);
+		app.Requirements = JsonSerializer.Serialize<string[]>([model.RequirePkce
 			? OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange
-			: string.Empty;
+			: string.Empty]);
+
+		await applicationManager.UpdateAsync(app);
+		AddAlert(AlertType.Success, "更新成功");
 		return View(model);
 	}
 
 	//
 	// GET: /Manage/ApplicationUpdateClientIdAndSecret
 	[HttpGet]
-	public async Task<IActionResult> ApplicationUpdateClientIdAndSecret(string clientId)
+	public async Task<IActionResult> ApplicationUpdateClientIdAndSecret(string appId)
 	{
-		var app = await applicationManager.FindByClientIdAsync(clientId);
+		var app = await applicationManager.FindByIdAsync(appId);
 		if (app == null || string.IsNullOrWhiteSpace(app.Id))
 		{
 			return NotFound();
 		}
 
 		var user = await GetCurrentUserAsync();
-		var userApps = await userManager.GetUserApplicationIdsAsync(user);
-		if (!userApps.Contains(app.Id))
+		if (!await userManager.CheckApplicationOwenAsync(user,app.Id))
 		{
 			return NotFound();
 		}
@@ -722,7 +728,7 @@ public sealed class ManageController(
 		app.ClientSecret = Guid.NewGuid().ToString("N");
 		await applicationManager.UpdateAsync(app);
 
-		return RedirectToAction(nameof(ApplicationEdit), new { appId = app.Id });
+		return RedirectToAction(nameof(ApplicationEdit), new { appId });
 	}
 
 	//
@@ -737,8 +743,7 @@ public sealed class ManageController(
 		}
 
 		var user = await GetCurrentUserAsync();
-		var userApps = await userManager.GetUserApplicationIdsAsync(user);
-		if (!userApps.Contains(app.Id))
+		if (!await userManager.CheckApplicationOwenAsync(user,app.Id))
 		{
 			return NotFound();
 		}

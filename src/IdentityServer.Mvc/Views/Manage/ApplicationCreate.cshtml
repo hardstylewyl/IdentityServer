@@ -31,11 +31,11 @@
 		@* </div> *@
 		<div class="mt-2">
 			<label>ConsentType</label>
-			<select asp-for="ConsentType" asp-items="consentTypes" class="form-control" disabled required></select>
+			<select asp-for="ConsentType" asp-items="consentTypes" class="form-control"></select>
 		</div>
 		<div class="mt-2">
 			<label>DisplayName</label>
-			<input type="text" asp-for="DisplayName" class="form-control" disabled required>
+			<input type="text" asp-for="DisplayName" class="form-control">
 		</div>
 		<div class="mt-2">
 			<label>ClientType</label>
@@ -126,7 +126,7 @@
 		$(document).ready(function () {
 			// 添加 Redirect URI 输入框
 			$('#addRedirectUri').click(function () {
-				addInputField('redirect-uri', 'redirect-uri-input', 'addRedirectUri', 'RedirectUris','用户授权后，重定向的地址，例如: https://xxx.com/login/callback_xx');
+				addInputField('redirectUris', 'redirect-uri-input', 'addRedirectUri', 'RedirectUris','用户授权后，重定向的地址，例如: https://xxx.com/login/callback_xx');
 			});
 
 			// 删除 Redirect URI 输入框
@@ -134,7 +134,7 @@
 
 			// 添加 Post Logout Redirect URI 输入框
 			$('#addPostLogoutRedirectUris').click(function () {
-				addInputField('postLogout-redirect-uri', 'postLogout-redirect-uri-input', 'addPostLogoutRedirectUris', 'PostLogoutRedirectUris','用户登出后，重定向的地址，例如: https://xxx.com/logout/callback_xx');
+				addInputField('postLogoutRedirectUris', 'postLogout-redirect-uri-input', 'addPostLogoutRedirectUris', 'PostLogoutRedirectUris','用户登出后，重定向的地址，例如: https://xxx.com/logout/callback_xx');
 			});
 
 			// 删除 Post Logout Redirect URI 输入框

@@ -1,8 +1,8 @@
-using OpenIddict.EntityFrameworkCore.Models;
+using IdentityServer.Mvc.Models.Common;
 
 namespace IdentityServer.Mvc.Models.ManageViewModels;
 
 public sealed class ApplicationManageViewModel
 {
-	public List<OpenIddictEntityFrameworkCoreApplication> Applications { get; set; }
+	public IEnumerable<UserApplicationModel> Applications { get; set; }
 }
