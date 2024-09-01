@@ -2,18 +2,18 @@
 @using ConsentTypes = OpenIddict.Abstractions.OpenIddictConstants.ConsentTypes
 @using ClientTypes = OpenIddict.Abstractions.OpenIddictConstants.ClientTypes
 @{
-List<SelectListItem> consentTypes =
-[
-new SelectListItem(ConsentTypes.Explicit, ConsentTypes.Explicit),
-new SelectListItem(ConsentTypes.Implicit, ConsentTypes.Implicit),
-new SelectListItem(ConsentTypes.External, ConsentTypes.External),
-new SelectListItem(ConsentTypes.Systematic, ConsentTypes.Systematic)
-];
-List<SelectListItem> clientTypes =
-[
-new SelectListItem(ClientTypes.Confidential, ClientTypes.Confidential),
-new SelectListItem(ClientTypes.Public, ClientTypes.Public),
-];
+	List<SelectListItem> consentTypes =
+	[
+		new SelectListItem(ConsentTypes.Explicit, ConsentTypes.Explicit),
+		new SelectListItem(ConsentTypes.Implicit, ConsentTypes.Implicit),
+		new SelectListItem(ConsentTypes.External, ConsentTypes.External),
+		new SelectListItem(ConsentTypes.Systematic, ConsentTypes.Systematic)
+	];
+	List<SelectListItem> clientTypes =
+	[
+		new SelectListItem(ClientTypes.Confidential, ClientTypes.Confidential),
+		new SelectListItem(ClientTypes.Public, ClientTypes.Public),
+	];
 }
 <div class="p-4">
 	<h3>应用详情（@Model.DisplayName）</h3>
@@ -34,6 +34,9 @@ new SelectListItem(ClientTypes.Public, ClientTypes.Public),
 			<input asp-for="ClientSecret" class="form-control" disabled readonly>
 		</div>
 		<div class="mt-2">
+			<a asp-controller="Manage" asp-action="ApplicationUpdateClientSecret" asp-route-appId="@Model.ApplicationId" class="btn btn-outline-danger">重置Client Secret</a>
+		</div>
+		<div class="mt-2">
 			<label>ConsentType</label>
 			<select asp-for="ConsentType" asp-items="consentTypes" class="form-control"></select>
 		</div>
@@ -48,13 +51,13 @@ new SelectListItem(ClientTypes.Public, ClientTypes.Public),
 		<div id="redirectUris" class="mt-2">
 			<label>
 				RedirectUris
-				<img src="~/images/icon_添加.svg" id="addRedirectUri" style="color: blue;cursor: pointer" alt="" />
+				<img src="~/images/icon_添加.svg" id="addRedirectUri" style="color: blue;cursor: pointer" alt=""/>
 			</label>
 			@for (var i = 0; i < Model.RedirectUris.Length; i++)
 			{
 				<div class="redirect-uri-input d-flex mt-2">
 					<input type="text" name="RedirectUris[@i]" value="@Model.RedirectUris[i]" class="form-control" placeholder="用户授权后，重定向的地址，例如: https://xxx.com/login/callback_xx" required/>
-					<img src="~/images/icon_删除.svg" class="remove-redirect-uri px-3" style="cursor: pointer;" alt="" disabled="@(Model.RedirectUris.Length == 1)" />
+					<img src="~/images/icon_删除.svg" class="remove-redirect-uri px-3" style="cursor: pointer;" alt="" disabled="@(Model.RedirectUris.Length == 1)"/>
 				</div>
 			}
 		</div>
@@ -67,7 +70,7 @@ new SelectListItem(ClientTypes.Public, ClientTypes.Public),
 			{
 				<div class="postLogout-redirect-uri-input d-flex mt-2">
 					<input type="text" name="PostLogoutRedirectUris[@i]" value="@Model.PostLogoutRedirectUris[i]" class="form-control" placeholder="用户登出后，重定向的地址，例如: https://xxx.com/logout/callback_xx" required/>
-					<img src="~/images/icon_删除.svg" class="remove-postLogout-redirect-uri px-3" style="cursor: pointer;" alt="" disabled="@(Model.PostLogoutRedirectUris.Length == 1)" />
+					<img src="~/images/icon_删除.svg" class="remove-postLogout-redirect-uri px-3" style="cursor: pointer;" alt="" disabled="@(Model.PostLogoutRedirectUris.Length == 1)"/>
 				</div>
 			}
 		</div>
@@ -87,7 +90,7 @@ new SelectListItem(ClientTypes.Public, ClientTypes.Public),
 </div>
 
 @section Scripts {
-<script>
+	<script>
 	"use strict";
 	function addInputField(containerId, inputClass, addButtonId, inputNamePrefix,placeholder) {
 		const container = $(`#${containerId}`);
@@ -151,4 +154,3 @@ new SelectListItem(ClientTypes.Public, ClientTypes.Public),
 	});
 </script>
 }
-

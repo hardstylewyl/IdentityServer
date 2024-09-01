@@ -522,24 +522,29 @@ public sealed class ManageController(
 	{
 		var user = await GetCurrentUserAsync();
 		var userApps = await userManager.GetUserApplications(user);
+		var ids = userApps.Select(x => x.ApplicationId).ToList();
 		var openIdApps = await applicationManager
-			.ListAsync(userApps.Select(x=>x.ApplicationId))
+			.ListAsync(ids)
 			.ToListAsync();
-		
-		var apps =  userApps.Join(openIdApps, 
-			x => x.ApplicationId, 
+
+		var apps = userApps.Join(openIdApps,
+			x => x.ApplicationId,
 			y => y.Id,
 			(x, y) => new UserApplicationModel { OpenIdApplication = y, UserApplication = x });
-		
+
 		return View(new ApplicationManageViewModel { Applications = apps });
 	}
 
+	//
+	// GET: /Manage/ApplicationCreate
 	[HttpGet]
 	public IActionResult ApplicationCreate()
 	{
 		return View(new ApplicationCreateViewModel());
 	}
 
+	//
+	// POST: /Manage/ApplicationCreate
 	[HttpPost]
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> ApplicationCreate(ApplicationCreateViewModel model)
@@ -597,7 +602,7 @@ public sealed class ManageController(
 		entity.Permissions.Add(OpenIddictConstants.Permissions.ResponseTypes.Code);
 
 		//添加scope权限
-		foreach (var permission in model.AllowScopes.Split(','))
+		foreach (var permission in model.AllowScopes?.Split(',') ?? [])
 		{
 			entity.Permissions.Add(OpenIddictConstants.Permissions.Prefixes.Scope + permission);
 		}
@@ -624,16 +629,17 @@ public sealed class ManageController(
 			AddErrors(result);
 			return View(model);
 		}
-
+		AddAlert(AlertType.Success, "创建应用成功");
 		return RedirectToAction(nameof(ApplicationEdit), new { appId = app.Id });
 	}
 
-
+	//
+	// GET: /Manage/ApplicationEdit
 	[HttpGet]
 	public async Task<IActionResult> ApplicationEdit(string appId)
 	{
 		var user = await GetCurrentUserAsync();
-		if (!await userManager.CheckApplicationOwenAsync(user,appId))
+		if (!await userManager.CheckApplicationOwenAsync(user, appId))
 		{
 			return NotFound();
 		}
@@ -644,29 +650,34 @@ public sealed class ManageController(
 			return NotFound();
 		}
 
+		var descriptor = new OpenIddictApplicationDescriptor();
+		await applicationManager.PopulateAsync(descriptor, app);
+
+		var redirectUris = descriptor.RedirectUris.Select(x => x.ToString()).ToArray();
+		var postLogoutRedirectUris = descriptor.PostLogoutRedirectUris.Select(x => x.ToString()).ToArray();
+		var scopes = descriptor.Permissions
+			.Where(x => x.StartsWith(OpenIddictConstants.Permissions.Prefixes.Scope))
+			.Select(x => x.Replace(OpenIddictConstants.Permissions.Prefixes.Scope, string.Empty));
+		var allowScopes = string.Join(',', scopes);
+		
 		return View(new ApplicationEditViewModel
 		{
-			ApplicationId = app.Id,
-			ClientId = app.ClientId!,
-			ClientSecret = app.ClientSecret!,
-			ConsentType = app.ConsentType!,
-			DisplayName = app.DisplayName!,
-			ClientType = app.ClientType!,
-			RedirectUris = string.IsNullOrWhiteSpace(app.RedirectUris)
-				? new string[1]
-				: JsonSerializer.Deserialize<string[]>(app.RedirectUris)!,
-			PostLogoutRedirectUris = string.IsNullOrWhiteSpace(app.PostLogoutRedirectUris)
-				? new string[1]
-				: JsonSerializer.Deserialize<string[]>(app.PostLogoutRedirectUris)!,
-			AllowScopes = string.IsNullOrWhiteSpace(app.Permissions)
-				? ""
-				: string.Join(',',
-					JsonSerializer.Deserialize<string[]>(app.Permissions)!.Where(x =>
-						x.StartsWith(OpenIddictConstants.Permissions.Prefixes.Scope))),
-			RequirePkce = app.Requirements!.Contains(OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange)
+			ApplicationId = app.Id!,
+			ClientId = descriptor.ClientId!,
+			ClientSecret = descriptor.ClientSecret!,
+			ConsentType = descriptor.ConsentType!,
+			DisplayName = descriptor.DisplayName!,
+			ClientType = descriptor.ClientType!,
+			RedirectUris = redirectUris,
+			PostLogoutRedirectUris = postLogoutRedirectUris,
+			AllowScopes = allowScopes,
+			RequirePkce = descriptor.Requirements
+				.Contains(OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange)
 		});
 	}
 
+	//
+	// POST: /Manage/ApplicationEdit
 	[HttpPost]
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> ApplicationEdit(ApplicationEditViewModel model)
@@ -683,26 +694,58 @@ public sealed class ManageController(
 		}
 
 		var user = await GetCurrentUserAsync();
-		if (!await userManager.CheckApplicationOwenAsync(user,app.Id))
+		if (!await userManager.CheckApplicationOwenAsync(user, app.Id))
 		{
 			return NotFound();
 		}
 
-		app.ConsentType = model.ConsentType;
-		app.DisplayName = model.DisplayName;
-		app.ClientType = model.ClientType;
-		app.RedirectUris = JsonSerializer.Serialize(model.RedirectUris);
-		app.PostLogoutRedirectUris = JsonSerializer.Serialize(model.PostLogoutRedirectUris);
-		var permissions = app.Permissions!.Split(',')
-			.Where(x => !x.StartsWith(OpenIddictConstants.Permissions.Prefixes.Scope));
-		var newPermissions =
-			model.AllowScopes.Split(',').Select(x => OpenIddictConstants.Permissions.Prefixes.Scope + x);
-		app.Permissions =  JsonSerializer.Serialize<string[]>([..permissions, ..newPermissions]);
-		app.Requirements = JsonSerializer.Serialize<string[]>([model.RequirePkce
-			? OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange
-			: string.Empty]);
+		var descriptor = new OpenIddictApplicationDescriptor();
+		await applicationManager.PopulateAsync(descriptor, app);
 
-		await applicationManager.UpdateAsync(app);
+		//附加回调地址
+		foreach (var uri in model.RedirectUris)
+		{
+			if (!Checker.Url(uri))
+			{
+				ModelState.AddModelError(string.Empty, $"RedirectUris Error: {uri}不是有效的链接");
+				return View(model);
+			}
+
+			descriptor.RedirectUris.Add(new Uri(uri));
+		}
+
+		//附加登出回调地址
+		foreach (var uri in model.PostLogoutRedirectUris)
+		{
+			if (!Checker.Url(uri))
+			{
+				ModelState.AddModelError(string.Empty, $"PostLogoutRedirectUris Error: {uri}不是有效的链接");
+				return View(model);
+			}
+
+			descriptor.PostLogoutRedirectUris.Add(new Uri(uri));
+		}
+
+		//添加scope权限
+		foreach (var permission in model.AllowScopes?.Split(',') ?? [])
+		{
+			descriptor.Permissions.Add(OpenIddictConstants.Permissions.Prefixes.Scope + permission);
+		}
+
+		//默认添加一些权限
+		descriptor.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Authorization);
+		descriptor.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Logout);
+		descriptor.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Token);
+		descriptor.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode);
+		descriptor.Permissions.Add(OpenIddictConstants.Permissions.ResponseTypes.Code);
+
+		//是否pkce
+		if (model.RequirePkce)
+		{
+			descriptor.Requirements.Add(OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange);
+		}
+
+		await applicationManager.UpdateAsync(app, descriptor);
 		AddAlert(AlertType.Success, "更新成功");
 		return View(model);
 	}
@@ -710,7 +753,7 @@ public sealed class ManageController(
 	//
 	// GET: /Manage/ApplicationUpdateClientIdAndSecret
 	[HttpGet]
-	public async Task<IActionResult> ApplicationUpdateClientIdAndSecret(string appId)
+	public async Task<IActionResult> ApplicationUpdateClientSecret(string appId)
 	{
 		var app = await applicationManager.FindByIdAsync(appId);
 		if (app == null || string.IsNullOrWhiteSpace(app.Id))
@@ -719,15 +762,14 @@ public sealed class ManageController(
 		}
 
 		var user = await GetCurrentUserAsync();
-		if (!await userManager.CheckApplicationOwenAsync(user,app.Id))
+		if (!await userManager.CheckApplicationOwenAsync(user, app.Id))
 		{
 			return NotFound();
 		}
 
-		app.ClientId = Guid.NewGuid().ToString("N");
-		app.ClientSecret = Guid.NewGuid().ToString("N");
-		await applicationManager.UpdateAsync(app);
-
+		//只更新client secret
+		await applicationManager.UpdateAsync(app, Guid.NewGuid().ToString("N"));
+		AddAlert(AlertType.Success, "更新成功");
 		return RedirectToAction(nameof(ApplicationEdit), new { appId });
 	}
 
@@ -743,12 +785,13 @@ public sealed class ManageController(
 		}
 
 		var user = await GetCurrentUserAsync();
-		if (!await userManager.CheckApplicationOwenAsync(user,app.Id))
+		if (!await userManager.CheckApplicationOwenAsync(user, app.Id))
 		{
 			return NotFound();
 		}
 
 		await applicationManager.DeleteAsync(app);
+		AddAlert(AlertType.Success, "删除成功");
 		return RedirectToAction(nameof(ApplicationManage));
 	}
 

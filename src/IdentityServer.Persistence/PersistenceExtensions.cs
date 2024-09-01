@@ -20,6 +20,7 @@ public static class PersistenceExtensions
 				}
 				AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 			});
+			// options.UseSqlite(connectionString);
 
 			options.UseOpenIddict();
 		})

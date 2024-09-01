@@ -6,11 +6,11 @@ public sealed class ApplicationCreateViewModel
 	
 	// public string ClientSecret { get; set; }
 	
-	public string ConsentType { get; set; }
+	public string? ConsentType { get; set; }
 	
-	public string DisplayName { get; set; }
+	public string? DisplayName { get; set; }
 	
-	public string ClientType { get; set; }
+	public string? ClientType { get; set; }
 	
 	public string[] RedirectUris { get; set; } = new string[1];
 
@@ -18,7 +18,7 @@ public sealed class ApplicationCreateViewModel
 
 	// public string[] Permissions { get; set; } = [];
 	
-	public string AllowScopes { get; set; }
+	public string? AllowScopes { get; set; }
 	
 	public bool RequirePkce { get; set; }
 }

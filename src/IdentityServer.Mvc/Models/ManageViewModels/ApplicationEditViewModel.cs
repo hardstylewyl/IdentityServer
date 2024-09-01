@@ -18,8 +18,8 @@ public sealed class ApplicationEditViewModel
 	public string[] PostLogoutRedirectUris { get; set; } = new string[1];
 
 	// public string[] Permissions { get; set; } = [];
-	
-	public string AllowScopes { get; set; }
+
+	public string? AllowScopes { get; set; }
 	
 	public bool RequirePkce { get; set; }
 }
