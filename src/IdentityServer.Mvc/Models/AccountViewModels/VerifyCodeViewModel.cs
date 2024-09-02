@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IdentityServer.Mvc.Models.AccountViewModels;
 
-public class VerifyCodeViewModel
+public sealed class VerifyCodeViewModel
 {
 	[Required]
 	public string Provider { get; set; }

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IdentityServer.Mvc.Models.AccountViewModels;
 
-public class LoginViewModel
+public sealed class LoginViewModel
 {
 	[Required(ErrorMessage = "账号是必须的")]
 	public string Username { get; set; }

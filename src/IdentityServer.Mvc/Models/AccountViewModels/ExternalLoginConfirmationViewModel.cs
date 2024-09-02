@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IdentityServer.Mvc.Models.AccountViewModels;
 
-public class ExternalLoginConfirmationViewModel
+public sealed class ExternalLoginConfirmationViewModel
 {
 	[Display(Name = "请输入邮箱")]
 	[Required]

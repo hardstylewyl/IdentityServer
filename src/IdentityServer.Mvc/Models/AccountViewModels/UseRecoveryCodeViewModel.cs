@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IdentityServer.Mvc.Models.AccountViewModels;
 
-public class UseRecoveryCodeViewModel
+public sealed class UseRecoveryCodeViewModel
 {
 	[Required]
 	public string Code { get; set; }

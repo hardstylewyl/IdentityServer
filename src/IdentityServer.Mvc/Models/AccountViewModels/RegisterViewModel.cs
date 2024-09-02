@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IdentityServer.Mvc.Models.AccountViewModels;
 
-public class RegisterViewModel
+public sealed class RegisterViewModel
 {
 	[Required]
 	[StringLength(20, MinimumLength = 6, ErrorMessage = "账号长度6-20位")]

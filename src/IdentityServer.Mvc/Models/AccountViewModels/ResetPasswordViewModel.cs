@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IdentityServer.Mvc.Models.AccountViewModels;
 
-public class ResetPasswordViewModel
+public sealed class ResetPasswordViewModel
 {
 	[Required]
 	[EmailAddress]

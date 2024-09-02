@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IdentityServer.Mvc.Models.AccountViewModels;
 
-public class VerifyAuthenticatorCodeViewModel
+public sealed class VerifyAuthenticatorCodeViewModel
 {
 	[Required]
 	public string Code { get; set; }

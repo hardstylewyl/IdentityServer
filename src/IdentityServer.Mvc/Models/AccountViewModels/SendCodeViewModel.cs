@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace IdentityServer.Mvc.Models.AccountViewModels;
 
-public class SendCodeViewModel
+public sealed class SendCodeViewModel
 {
 	public string SelectedProvider { get; set; }
 
