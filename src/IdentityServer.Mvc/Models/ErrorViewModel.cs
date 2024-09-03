@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IdentityServer.Mvc.Models;
 
-public class ErrorViewModel
+public sealed class ErrorViewModel
 {
 	[Display(Name = "Error")]
 	public string Error { get; set; }
