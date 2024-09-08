@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using IdentityServer.CrossCuttingConcerns.Utility;
 using IdentityServer.Domain.Entities;
 using IdentityServer.Domain.Repositories;
 using Microsoft.AspNetCore.Identity;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace IdentityServer.Infrastructure.Identity;
 
 public class UserStore :
+	IUserRoleStore<User>,
 	IUserLoginStore<User>,
 	IUserClaimStore<User>,
 	IUserPasswordStore<User>,
@@ -22,15 +24,18 @@ public class UserStore :
 {
 	private readonly IUnitOfWork _unitOfWork;
 	private readonly IUserRepository _userRepository;
+	private readonly IRoleRepository _roleRepository;
 
-	public UserStore(IUserRepository userRepository)
+	public UserStore(IUserRepository userRepository, IRoleRepository roleRepository)
 	{
 		_unitOfWork = userRepository.UnitOfWork;
 		_userRepository = userRepository;
+		_roleRepository = roleRepository;
 	}
 
 	public IQueryable<User> Users => _userRepository.GetQueryableSet();
 	public IUserRepository UserRepository => _userRepository;
+
 	public void Dispose()
 	{
 	}
@@ -428,8 +433,8 @@ public class UserStore :
 	public async Task<IList<UserLoginInfo>> GetLoginsAsync(User user, CancellationToken cancellationToken)
 	{
 		user = await _userRepository
-		   .Get(new UserQueryOptions { IncludeUserLinks = true })
-		   .FirstAsync(x => x.Id == user.Id, cancellationToken);
+			.Get(new UserQueryOptions { IncludeUserLinks = true })
+			.FirstAsync(x => x.Id == user.Id, cancellationToken);
 
 		return user.UserLinks
 			.Select(x => new UserLoginInfo(x.LoginProvider, x.ProviderKey, x.ProviderDisplayName))
@@ -442,6 +447,89 @@ public class UserStore :
 			.Get(new UserQueryOptions { IncludeUserLinks = true })
 			.FirstOrDefaultAsync(x => x.UserLinks
 				.Any(y => y.LoginProvider == loginProvider
-						  && y.ProviderKey == providerKey), cancellationToken);
+				          && y.ProviderKey == providerKey), cancellationToken);
+	}
+
+	public async Task AddToRoleAsync(User user, string roleName, CancellationToken cancellationToken)
+	{
+		Ensure.NotEmpty(roleName, "roleName not empty", nameof(roleName));
+		
+		var role = await _roleRepository.GetQueryableSet()
+			.FirstOrDefaultAsync(x => x.NormalizedName == roleName, cancellationToken);
+		if (role == null)
+		{
+			throw new InvalidOperationException("Role not found");
+		}
+
+		user = await UserRepository
+			.Get(new UserQueryOptions { IncludeUserRoles = true })
+			.FirstAsync(x => x.Id == user.Id, cancellationToken);
+
+		user.UserRoles.Add(new UserRole
+		{
+			UserId = user.Id,
+			User = user,
+			Role = role,
+			RoleId = role.Id
+		});
+	}
+
+	public async Task RemoveFromRoleAsync(User user, string roleName, CancellationToken cancellationToken)
+	{
+		Ensure.NotEmpty(roleName, "roleName not empty", nameof(roleName));
+		var role = await _roleRepository.GetQueryableSet()
+			.FirstOrDefaultAsync(x => x.NormalizedName == roleName, cancellationToken);
+
+		if (role == null)
+		{
+			throw new InvalidOperationException("Role not found");
+		}
+
+		user = await UserRepository
+			.Get(new UserQueryOptions { IncludeUserRoles = true })
+			.FirstAsync(x => x.Id == user.Id, cancellationToken);
+
+		var userRole = user.UserRoles.FirstOrDefault(x => x.RoleId == role.Id);
+		if (userRole != null)
+		{
+			user.UserRoles.Remove(userRole);
+		}
+	}
+
+	public async Task<IList<string>> GetRolesAsync(User user, CancellationToken cancellationToken)
+	{
+		user = await UserRepository
+			.Get(new UserQueryOptions { IncludeUserRoles = true })
+			.FirstAsync(x => x.Id == user.Id, cancellationToken);
+
+		return user.UserRoles.Select(x => x.Role.Name).ToList();
+	}
+
+	public async Task<bool> IsInRoleAsync(User user, string roleName, CancellationToken cancellationToken)
+	{
+		Ensure.NotEmpty(roleName, "roleName not empty", nameof(roleName));
+
+		user = await UserRepository
+			.Get(new UserQueryOptions { IncludeUserRoles = true })
+			.FirstAsync(x => x.Id == user.Id, cancellationToken);
+
+		return user.UserRoles.Any(x => x.Role.NormalizedName == roleName);
+	}
+
+	public async Task<IList<User>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
+	{
+		Ensure.NotEmpty(roleName, "roleName not empty", nameof(roleName));
+		var role = await _roleRepository.GetQueryableSet()
+			.FirstOrDefaultAsync(x => x.NormalizedName == roleName, cancellationToken);
+
+		if (role == null)
+		{
+			throw new InvalidOperationException("Role not found");
+		}
+
+		return await UserRepository
+			.Get(new UserQueryOptions { IncludeUserRoles = true, AsNoTracking = true })
+			.Where(x => x.UserRoles.Any(y => y.RoleId == role.Id))
+			.ToListAsync(cancellationToken);
 	}
 }
