@@ -701,6 +701,11 @@ public sealed class ManageController(
 
 		var descriptor = new OpenIddictApplicationDescriptor();
 		await applicationManager.PopulateAsync(descriptor, app);
+		
+		//修改应用信息
+		descriptor.DisplayName = model.DisplayName;
+		descriptor.ConsentType = model.ConsentType;
+		descriptor.ClientType = model.ClientType;
 
 		//附加回调地址
 		foreach (var uri in model.RedirectUris)
