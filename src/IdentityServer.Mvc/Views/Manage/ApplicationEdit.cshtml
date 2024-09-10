@@ -22,7 +22,6 @@
 	      asp-controller="Manage"
 	      asp-action="ApplicationEdit" class="layui-form">
 		<div asp-validation-summary="All" class="text-danger"></div>
-		<input asp-for="ApplicationId" hidden readonly>
 		<div class="mt-2">
 			<label>ClientId</label>
 			<input asp-for="ClientId" hidden readonly>
@@ -34,7 +33,7 @@
 			<input asp-for="ClientSecret" class="form-control" disabled readonly>
 		</div>
 		<div class="mt-2">
-			<a asp-controller="Manage" asp-action="ApplicationUpdateClientSecret" asp-route-appId="@Model.ApplicationId" class="btn btn-outline-danger">重置Client Secret</a>
+			<a asp-controller="Manage" asp-action="ApplicationUpdateClientSecret" asp-route-clientId="@Model.ClientId" class="btn btn-outline-danger">重置Client Secret</a>
 		</div>
 		<div class="mt-2">
 			<label>ConsentType</label>
@@ -84,7 +83,7 @@
 		</div>
 		<div class="mt-2">
 			<button type="submit" name="submit" class="btn btn-primary">提交修改</button>
-			<a asp-controller="Manage" asp-action="ApplicationDelete" asp-route-appId="@Model.ApplicationId" class="btn btn-danger">删除应用</a>
+			<a asp-controller="Manage" asp-action="ApplicationDelete" asp-route-clientId="@Model.ClientId" class="btn btn-danger">删除应用</a>
 		</div>
 	</form>
 </div>

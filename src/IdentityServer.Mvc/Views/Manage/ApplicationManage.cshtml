@@ -11,7 +11,7 @@
 		@foreach (var (u, o) in Model.Applications.Select(x => (x.UserApplication, x.OpenIdApplication)))
 		{
 			<form method="get" asp-controller="Manage" asp-action="ApplicationEdit">
-				<input name="appId" value="@o.Id" hidden>
+				<input name="clientId" value="@o.ClientId" hidden>
 				<dt>
 					应用名称：@o.DisplayName
 				</dt>

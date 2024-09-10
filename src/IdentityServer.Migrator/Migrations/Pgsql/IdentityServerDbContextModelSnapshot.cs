@@ -335,9 +335,11 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("NormalizedName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<uint>("RowVersion")
@@ -469,7 +471,11 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
 
                     NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"), "userapplicationseq");
 
-                    b.Property<string>("ApplicationId")
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClientSecret")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -489,6 +495,8 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("UserApplications", (string)null);
                 });
@@ -953,6 +961,15 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("IdentityServer.Domain.Entities.UserApplication", b =>
+                {
+                    b.HasOne("IdentityServer.Domain.Entities.User", null)
+                        .WithMany("UserApplications")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("IdentityServer.Domain.Entities.UserClaim", b =>
                 {
                     b.HasOne("IdentityServer.Domain.Entities.User", "User")
@@ -1092,6 +1109,8 @@ namespace IdentityServer.Migrator.Migrations.Pgsql
                     b.Navigation("PasswordHistories");
 
                     b.Navigation("Tokens");
+
+                    b.Navigation("UserApplications");
 
                     b.Navigation("UserLinks");
 

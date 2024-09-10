@@ -2,7 +2,6 @@
 
 public sealed class ApplicationEditViewModel
 {
-	public string ApplicationId { get; set; }
 	public string ClientId { get; set; }
 	
 	public string ClientSecret { get; set; }

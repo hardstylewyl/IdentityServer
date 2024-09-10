@@ -54,24 +54,42 @@ public sealed class UserManager(
 
 		return user.UserApplications;
 	}
-	
+
 	public async Task<bool> CheckApplicationOwenAsync(User user,
-		string applicationId,
+		string clientId,
 		CancellationToken cancellationToken = default)
 	{
-		var apps =await GetUserApplications(user, cancellationToken);
-		return apps.Any(x => x.ApplicationId == applicationId);
+		var apps = await GetUserApplications(user, cancellationToken);
+		return apps.Any(x => x.ClientId == clientId);
 	}
 
-	public async Task<IdentityResult> AddUserApplicationAsync(User user, string applicationId,
+	public async Task<string?> GetClientSecretAsync(User user,
+		string clientId,
+		CancellationToken cancellationToken = default)
+	{
+		var apps = await GetUserApplications(user, cancellationToken);
+		return apps.FirstOrDefault(x => x.ClientId == clientId)?.ClientSecret;
+	}
+
+	public async Task<IdentityResult> AddOrUpdateApplicationAsync(User user,
+		string clientId,
+		string clientSecret,
 		CancellationToken cancellationToken = default)
 	{
 		user = await GetUserApplicationQuery()
 			.FirstAsync(x => x.Id == user.Id, cancellationToken);
 
+		var app = user.UserApplications.FirstOrDefault(x => x.ClientId == clientId);
+		if (app != null)
+		{
+			app.ClientSecret = clientSecret;
+			return await UpdateUserAsync(user).ConfigureAwait(false);
+		}
+
 		user.UserApplications.Add(new UserApplication
 		{
-			ApplicationId = applicationId,
+			ClientId = clientId,
+			ClientSecret = clientSecret,
 			UserId = user.Id
 		});
 		return await UpdateUserAsync(user).ConfigureAwait(false);

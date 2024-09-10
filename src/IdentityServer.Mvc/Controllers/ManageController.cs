@@ -522,14 +522,13 @@ public sealed class ManageController(
 	{
 		var user = await GetCurrentUserAsync();
 		var userApps = await userManager.GetUserApplications(user);
-		var ids = userApps.Select(x => x.ApplicationId).ToList();
+		var clientIds = userApps.Select(x => x.ClientId).ToList();
 		var openIdApps = await applicationManager
-			.ListAsync(ids)
-			.ToListAsync();
+			.ListByClientIdAsync(clientIds);
 
 		var apps = userApps.Join(openIdApps,
-			x => x.ApplicationId,
-			y => y.Id,
+			x => x.ClientId,
+			y => y.ClientId,
 			(x, y) => new UserApplicationModel { OpenIdApplication = y, UserApplication = x });
 
 		return View(new ApplicationManageViewModel { Applications = apps });
@@ -623,28 +622,29 @@ public sealed class ManageController(
 		}
 
 		//建立用户和应用关联
-		var result = await userManager.AddUserApplicationAsync(await GetCurrentUserAsync(), app.Id);
+		var result = await userManager.AddOrUpdateApplicationAsync(await GetCurrentUserAsync(), clientId, clientSecret);
 		if (!result.Succeeded)
 		{
 			AddErrors(result);
 			return View(model);
 		}
+
 		AddAlert(AlertType.Success, "创建应用成功");
-		return RedirectToAction(nameof(ApplicationEdit), new { appId = app.Id });
+		return RedirectToAction(nameof(ApplicationEdit), new { clientId  });
 	}
 
 	//
 	// GET: /Manage/ApplicationEdit
 	[HttpGet]
-	public async Task<IActionResult> ApplicationEdit(string appId)
+	public async Task<IActionResult> ApplicationEdit(string clientId)
 	{
 		var user = await GetCurrentUserAsync();
-		if (!await userManager.CheckApplicationOwenAsync(user, appId))
+		if (!await userManager.CheckApplicationOwenAsync(user, clientId))
 		{
 			return NotFound();
 		}
 
-		var app = await applicationManager.FindByIdAsync(appId);
+		var app = await applicationManager.FindByClientIdAsync(clientId);
 		if (app == null)
 		{
 			return NotFound();
@@ -659,12 +659,12 @@ public sealed class ManageController(
 			.Where(x => x.StartsWith(OpenIddictConstants.Permissions.Prefixes.Scope))
 			.Select(x => x.Replace(OpenIddictConstants.Permissions.Prefixes.Scope, string.Empty));
 		var allowScopes = string.Join(',', scopes);
-		
+
 		return View(new ApplicationEditViewModel
 		{
-			ApplicationId = app.Id!,
 			ClientId = descriptor.ClientId!,
-			ClientSecret = descriptor.ClientSecret!,
+			//显示client密码原文
+			ClientSecret = (await userManager.GetClientSecretAsync(user, descriptor.ClientId!))!,
 			ConsentType = descriptor.ConsentType!,
 			DisplayName = descriptor.DisplayName!,
 			ClientType = descriptor.ClientType!,
@@ -688,20 +688,20 @@ public sealed class ManageController(
 		}
 
 		var app = await applicationManager.FindByClientIdAsync(model.ClientId);
-		if (app == null || string.IsNullOrWhiteSpace(app.Id))
+		if (app == null || string.IsNullOrWhiteSpace(app.ClientId))
 		{
 			return NotFound();
 		}
 
 		var user = await GetCurrentUserAsync();
-		if (!await userManager.CheckApplicationOwenAsync(user, app.Id))
+		if (!await userManager.CheckApplicationOwenAsync(user, app.ClientId))
 		{
 			return NotFound();
 		}
 
 		var descriptor = new OpenIddictApplicationDescriptor();
 		await applicationManager.PopulateAsync(descriptor, app);
-		
+
 		//修改应用信息
 		descriptor.DisplayName = model.DisplayName;
 		descriptor.ConsentType = model.ConsentType;
@@ -758,39 +758,41 @@ public sealed class ManageController(
 	//
 	// GET: /Manage/ApplicationUpdateClientIdAndSecret
 	[HttpGet]
-	public async Task<IActionResult> ApplicationUpdateClientSecret(string appId)
+	public async Task<IActionResult> ApplicationUpdateClientSecret(string clientId)
 	{
-		var app = await applicationManager.FindByIdAsync(appId);
-		if (app == null || string.IsNullOrWhiteSpace(app.Id))
+		var app = await applicationManager.FindByClientIdAsync(clientId);
+		if (app == null || string.IsNullOrWhiteSpace(app.ClientId))
 		{
 			return NotFound();
 		}
 
 		var user = await GetCurrentUserAsync();
-		if (!await userManager.CheckApplicationOwenAsync(user, app.Id))
+		if (!await userManager.CheckApplicationOwenAsync(user, app.ClientId))
 		{
 			return NotFound();
 		}
 
 		//只更新client secret
-		await applicationManager.UpdateAsync(app, Guid.NewGuid().ToString("N"));
+		var newClientSecret = Guid.NewGuid().ToString("N");
+		await applicationManager.UpdateAsync(app, newClientSecret);
+		await userManager.AddOrUpdateApplicationAsync(user, app.ClientId, newClientSecret);
 		AddAlert(AlertType.Success, "更新成功");
-		return RedirectToAction(nameof(ApplicationEdit), new { appId });
+		return RedirectToAction(nameof(ApplicationEdit), new { clientId });
 	}
 
 	//
 	// GET: /Manage/ApplicationDelete
 	[HttpGet]
-	public async Task<IActionResult> ApplicationDelete(string appId)
+	public async Task<IActionResult> ApplicationDelete(string clientId)
 	{
-		var app = await applicationManager.FindByIdAsync(appId);
-		if (app == null || string.IsNullOrWhiteSpace(app.Id))
+		var app = await applicationManager.FindByIdAsync(clientId);
+		if (app == null || string.IsNullOrWhiteSpace(app.ClientId))
 		{
 			return NotFound();
 		}
 
 		var user = await GetCurrentUserAsync();
-		if (!await userManager.CheckApplicationOwenAsync(user, app.Id))
+		if (!await userManager.CheckApplicationOwenAsync(user, app.ClientId))
 		{
 			return NotFound();
 		}

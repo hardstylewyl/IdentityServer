@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using IdentityServer.CrossCuttingConcerns.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
@@ -13,9 +14,11 @@ public sealed class OpenIddictApplicationManager(
 	IOpenIddictApplicationStoreResolver resolver)
 	: OpenIddictApplicationManager<OpenIddictEntityFrameworkCoreApplication>(cache, logger, options, resolver)
 {
-	public IAsyncEnumerable<OpenIddictEntityFrameworkCoreApplication> ListAsync(IEnumerable<string> ids,
+	public Task<List<OpenIddictEntityFrameworkCoreApplication>> ListByClientIdAsync(IEnumerable<string> clientIds,
 		CancellationToken cancellationToken = default)
 	{
-		return this.ListAsync(x => x.Where(y => ids.Contains(y.Id)), cancellationToken);
+		return this.ListAsync(x => 
+			x.Where(y => clientIds.Contains(y.ClientId)), cancellationToken)
+			.ToListAsync();
 	}
 }
