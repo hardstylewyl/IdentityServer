@@ -3,7 +3,7 @@ using IdentityServer.Domain.ValueObjects;
 
 namespace IdentityServer.Domain.Entities;
 
-public class UserLoginHistory : Entity<long>
+public sealed class UserLoginHistory : Entity<long>
 {
 	public long UserId { get; set; }
 

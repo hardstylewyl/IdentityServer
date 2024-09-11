@@ -2,7 +2,7 @@ using IdentityServer.Domain.Entities.Abstractions;
 
 namespace IdentityServer.Domain.Entities;
 
-public class ConfigurationEntry : Entity<long>, IAggregateRoot
+public sealed class ConfigurationEntry : Entity<long>, IAggregateRoot
 {
 	public string Key { get; set; }
 

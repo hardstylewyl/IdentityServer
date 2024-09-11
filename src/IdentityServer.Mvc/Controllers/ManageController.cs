@@ -523,8 +523,7 @@ public sealed class ManageController(
 		var user = await GetCurrentUserAsync();
 		var userApps = await userManager.GetUserApplications(user);
 		var clientIds = userApps.Select(x => x.ClientId).ToList();
-		var openIdApps = await applicationManager
-			.ListByClientIdAsync(clientIds);
+		var openIdApps = await applicationManager.ListByClientIdAsync(clientIds);
 
 		var apps = userApps.Join(openIdApps,
 			x => x.ClientId,

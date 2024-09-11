@@ -2,7 +2,7 @@ using IdentityServer.Domain.Entities.Abstractions;
 
 namespace IdentityServer.Domain.Entities;
 
-public class AuditLogEntry : Entity<long>, IAggregateRoot
+public sealed class AuditLogEntry : Entity<long>, IAggregateRoot
 {
 	public long UserId { get; set; }
 

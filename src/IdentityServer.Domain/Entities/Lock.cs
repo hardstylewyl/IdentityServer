@@ -1,6 +1,6 @@
 namespace IdentityServer.Domain.Entities;
 
-public class Lock
+public sealed class Lock
 {
 	public string EntityId { get; set; }
 

@@ -2,7 +2,7 @@ using IdentityServer.Domain.Entities.Abstractions;
 
 namespace IdentityServer.Domain.Entities;
 
-public class UserLink : Entity<long>
+public sealed class UserLink : Entity<long>
 {
 	public string LoginProvider { get; set; }
 

@@ -2,7 +2,7 @@ using IdentityServer.Domain.Entities.Abstractions;
 
 namespace IdentityServer.Domain.Entities;
 
-public class UserRole : Entity<long>
+public sealed class UserRole : Entity<long>
 {
 	public long UserId { get; set; }
 

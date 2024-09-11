@@ -2,7 +2,7 @@ using IdentityServer.Domain.Entities.Abstractions;
 
 namespace IdentityServer.Domain.Entities;
 
-public class User : Entity<long>, IAggregateRoot
+public sealed class User : Entity<long>, IAggregateRoot
 {
 	public string UserName { get; set; } = null!;
 

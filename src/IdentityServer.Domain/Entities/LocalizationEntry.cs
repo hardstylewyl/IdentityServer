@@ -2,7 +2,7 @@ using IdentityServer.Domain.Entities.Abstractions;
 
 namespace IdentityServer.Domain.Entities;
 
-public class LocalizationEntry : Entity<long>, IAggregateRoot
+public sealed class LocalizationEntry : Entity<long>, IAggregateRoot
 {
 	public string Name { get; set; }
 
